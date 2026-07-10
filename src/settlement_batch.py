@@ -47,6 +47,7 @@ class SettlementBatch:
         t2 = time.perf_counter()
 
         self.vault.store(file_id, chain.root_hash, self.algorithm, record_count,
+                          header_hash=chain.header_hash,
                           record_hashes=chain.record_hashes, trans_ids=chain.trans_ids)
 
         return BatchResult(

@@ -42,6 +42,7 @@ class VaultRecord:
 @dataclass
 class ChainLedger:
     file_id: str
+    header_hash: str
     record_hashes: list[str]
     trans_ids: list[str]
 
@@ -69,7 +70,8 @@ class HashVault:
         return os.path.join(self.chain_dir, f"{file_id}.json")
 
     def store(self, file_id: str, hash_value: str, algorithm: str, record_count: int,
-              record_hashes: list[str] | None = None, trans_ids: list[str] | None = None) -> VaultRecord:
+              header_hash: str | None = None, record_hashes: list[str] | None = None,
+              trans_ids: list[str] | None = None) -> VaultRecord:
         """체인 루트 해시를 격리 보관한다. 동일 file_id 재등록은 변조 시도로 간주하여 거부한다."""
         data = self._read_all()
         if file_id in data:
@@ -88,7 +90,11 @@ class HashVault:
             if os.path.exists(chain_path):
                 raise VaultIntegrityError(f"'{file_id}'의 체인 원장이 이미 존재합니다 (write-once 정책 위반).")
             with open(chain_path, "w", encoding="utf-8") as f:
-                json.dump({"record_hashes": record_hashes, "trans_ids": trans_ids or []}, f)
+                json.dump({
+                    "header_hash": header_hash or "",
+                    "record_hashes": record_hashes,
+                    "trans_ids": trans_ids or [],
+                }, f)
             os.chmod(chain_path, stat.S_IRUSR | stat.S_IWUSR)
 
         return record
@@ -107,4 +113,9 @@ class HashVault:
             raise VaultIntegrityError(f"'{file_id}'에 해당하는 체인 원장이 Vault에 없습니다.")
         with open(chain_path, "r", encoding="utf-8") as f:
             payload = json.load(f)
-        return ChainLedger(file_id=file_id, record_hashes=payload["record_hashes"], trans_ids=payload["trans_ids"])
+        return ChainLedger(
+            file_id=file_id,
+            header_hash=payload.get("header_hash", ""),
+            record_hashes=payload["record_hashes"],
+            trans_ids=payload["trans_ids"],
+        )

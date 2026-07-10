@@ -151,7 +151,8 @@ def main():
     parser.add_argument("--records", type=int, default=config.DEFAULT_RECORD_COUNT)
     parser.add_argument("--trials", type=int, default=5)
     parser.add_argument("--tamper-count", type=int, default=1)
-    parser.add_argument("--tamper-mode", choices=["amount", "account", "both"], default="amount")
+    parser.add_argument("--tamper-mode", choices=["amount", "account", "both", "header", "delete", "insert"],
+                        default="amount")
     parser.add_argument("--latency-sizes", type=int, nargs="+", default=[1_000, 10_000, 50_000, 100_000])
     args = parser.parse_args()
 

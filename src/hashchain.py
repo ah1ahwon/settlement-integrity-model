@@ -22,6 +22,7 @@ from dataclasses import dataclass
 @dataclass
 class ChainResult:
     root_hash: str
+    header_hash: str
     record_hashes: list[str]
     trans_ids: list[str]
 
@@ -34,14 +35,17 @@ def build_chain(file_path: str, file_id: str) -> ChainResult:
     """정산 CSV 파일을 레코드(행) 단위로 읽어 해시 체인을 구성한다.
 
     바이트 단위 원본 라인을 그대로 해싱하므로 필드 값의 공백 하나, 자릿수
-    하나가 바뀌어도 해당 레코드 해시와 이후 체인 전체가 달라진다.
+    하나가 바뀌어도 해당 레코드 해시와 이후 체인 전체가 달라진다. 헤더도
+    체인 루트에 포함하여 컬럼 순서/명칭 변조까지 탐지한다.
     """
     record_hashes: list[str] = []
     trans_ids: list[str] = []
     chain = hashlib.sha256(genesis_seed(file_id).encode("utf-8")).hexdigest()
 
     with open(file_path, "rb") as f:
-        f.readline()  # 헤더 라인은 레코드가 아니므로 체인에서 제외
+        header = f.readline().rstrip(b"\r\n")
+        header_hash = hashlib.sha256(header).hexdigest()
+        chain = hashlib.sha256((chain + header_hash).encode("utf-8")).hexdigest()
         for raw_line in f:
             line = raw_line.rstrip(b"\r\n")
             if not line:
@@ -51,12 +55,15 @@ def build_chain(file_path: str, file_id: str) -> ChainResult:
             trans_ids.append(line.split(b",", 1)[0].decode("utf-8"))
             chain = hashlib.sha256((chain + record_hash).encode("utf-8")).hexdigest()
 
-    return ChainResult(root_hash=chain, record_hashes=record_hashes, trans_ids=trans_ids)
+    return ChainResult(root_hash=chain, header_hash=header_hash, record_hashes=record_hashes, trans_ids=trans_ids)
 
 
 def localize_tampering(original: ChainResult, recomputed: ChainResult) -> list[str]:
     """체인 루트 불일치 시, 위치별 레코드 해시를 대조해 변조된 trans_id를 특정한다."""
     tampered: list[str] = []
+    if original.header_hash != recomputed.header_hash:
+        tampered.append("HEADER_MISMATCH")
+
     n = min(len(original.record_hashes), len(recomputed.record_hashes))
     for i in range(n):
         if original.record_hashes[i] != recomputed.record_hashes[i]:

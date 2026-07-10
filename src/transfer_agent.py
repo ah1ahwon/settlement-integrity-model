@@ -79,6 +79,7 @@ class TransferAgent:
                 ledger = self.vault.retrieve_chain(file_id)
                 original_chain = ChainResult(
                     root_hash=original_record.hash_value,
+                    header_hash=ledger.header_hash,
                     record_hashes=ledger.record_hashes,
                     trans_ids=ledger.trans_ids,
                 )

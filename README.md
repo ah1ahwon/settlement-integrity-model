@@ -11,17 +11,20 @@
 | Phase 1: 생성 및 격리 | 정산 파일 생성 → 스트림 종료 즉시 레코드 단위 해시 체인 계산 → Hash Vault 격리 보관 | `data_generator.py`, `settlement_batch.py`, `hashchain.py`, `hash_vault.py` |
 | Phase 2: 대기 및 전송 | 스케줄에 따라 전송 에이전트(FTP/SFTP 모사) 기동 | `transfer_agent.py` |
 | Phase 3: 교차 검증 및 통제 | 전송 직전 체인 재계산 → Vault 원본 루트 해시와 대사 → 불일치 시 즉각 차단(Drop)+알람+변조 위치 특정 | `transfer_agent.py`, `hashchain.py` |
-| Case B: 변조 공격 | Phase 1과 2 사이 시간차를 이용한 살라미 기법 변조 | `tamper.py` |
+| Case B: 변조 공격 | Phase 1과 2 사이 시간차를 이용한 금액/계좌/헤더/레코드 구조 변조 | `tamper.py` |
 | 평가 지표 | 변조 탐지율, 변조 위치 특정 정확도, 처리 지연 시간(Latency Overhead) | `metrics.py` |
 | 실험 오케스트레이션 | Case A/B 반복 실행, 데이터 규모별 지연시간 스윕 | `simulate.py` |
 
 ### 해시 체이닝(Hash Chaining) 구조
 
 파일 전체를 한 번에 해싱하는 방식(단일 SHA-256) 대신, 정산 파일의 각
-거래(DATA 레코드)를 순서대로 이전 체인값과 연결해 누적 해싱한다.
+거래(DATA 레코드)를 순서대로 이전 체인값과 연결해 누적 해싱한다. 컬럼명과
+순서를 바꾸는 헤더 변조도 탐지하기 위해 헤더 해시를 체인 루트에 먼저
+반영한다.
 
 ```
 chain_0 = SHA256(genesis_seed)
+chain_header = SHA256(chain_0 || SHA256(header))
 chain_i = SHA256(chain_{i-1} || SHA256(record_i))   for i = 1..N
 ```
 
@@ -55,6 +58,11 @@ python3 src/simulate.py --case a --records 100000 --trials 10
 # 변조 시나리오만 (100,000건 중 1건만 변조하는 살라미 기법)
 python3 src/simulate.py --case b --records 100000 --trials 10 --tamper-count 1 --tamper-mode amount
 
+# 구조적 변조 시나리오 (헤더 변경, 레코드 삭제/삽입)
+python3 src/simulate.py --case b --records 100000 --trials 5 --tamper-mode header
+python3 src/simulate.py --case b --records 100000 --trials 5 --tamper-count 1 --tamper-mode delete
+python3 src/simulate.py --case b --records 100000 --trials 5 --tamper-count 1 --tamper-mode insert
+
 # 데이터 규모별 처리 지연 시간만 측정
 python3 src/simulate.py --case latency --latency-sizes 1000 10000 50000 100000
 ```
@@ -83,10 +91,11 @@ python3 src/simulate.py --case latency --latency-sizes 1000 10000 50000 100000
 python3 -m pytest tests/ -v
 ```
 
-정상 파일은 전송 허용(TRANSMITTED), 변조 파일(금액/계좌번호, 1건 또는
-여러 건을 동시에 변조하는 살라미 기법 포함)은 100% 차단(BLOCKED)되고 변조된
-trans_id가 정확히 특정되는지, Hash Vault가 중복 등록·존재하지 않는 항목
-조회를 거부하는지를 검증합니다.
+정상 파일은 전송 허용(TRANSMITTED), 변조 파일(금액/계좌번호, 헤더 변경,
+레코드 삭제/삽입, 1건 또는 여러 건을 동시에 변조하는 살라미 기법 포함)은
+100% 차단(BLOCKED)되는지 검증합니다. 금액/계좌번호 수정은 변조된 trans_id가
+정확히 특정되는지, 레코드 삭제/삽입은 건수 불일치가 탐지되는지, Hash Vault가
+중복 등록·존재하지 않는 항목 조회를 거부하는지도 함께 확인합니다.
 
 ## 디렉터리 구조
 

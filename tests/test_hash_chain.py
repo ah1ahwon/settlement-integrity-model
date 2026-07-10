@@ -86,6 +86,42 @@ def test_multiple_tampered_records_are_all_localized(env):
     assert len(r.tampered_trans_ids) == 5
 
 
+def test_header_tampering_is_blocked(env):
+    """컬럼명/헤더 변조도 체인 루트에 반영되어 차단되어야 한다."""
+    vault, batch, agent = env
+    b = batch.run("file_header_tamper", RECORD_COUNT, seed=6)
+    tamper_file(b.file_path, mode="header", seed=14)
+    r = agent.transmit(b.file_id, b.file_path)
+
+    assert r.status == "BLOCKED"
+    assert r.verified is False
+    assert "HEADER_MISMATCH" in r.tampered_trans_ids
+
+
+def test_deleted_record_is_blocked(env):
+    """전송 전 레코드 삭제 공격은 건수 불일치와 루트 해시 불일치로 차단되어야 한다."""
+    vault, batch, agent = env
+    b = batch.run("file_delete_tamper", RECORD_COUNT, seed=7)
+    tamper_file(b.file_path, tamper_count=1, mode="delete", seed=15)
+    r = agent.transmit(b.file_id, b.file_path)
+
+    assert r.status == "BLOCKED"
+    assert r.verified is False
+    assert any(item.startswith("RECORD_COUNT_MISMATCH") for item in r.tampered_trans_ids)
+
+
+def test_inserted_record_is_blocked(env):
+    """전송 전 레코드 삽입 공격은 건수 불일치와 루트 해시 불일치로 차단되어야 한다."""
+    vault, batch, agent = env
+    b = batch.run("file_insert_tamper", RECORD_COUNT, seed=8)
+    tamper_file(b.file_path, tamper_count=1, mode="insert", seed=16)
+    r = agent.transmit(b.file_id, b.file_path)
+
+    assert r.status == "BLOCKED"
+    assert r.verified is False
+    assert any(item.startswith("RECORD_COUNT_MISMATCH") for item in r.tampered_trans_ids)
+
+
 def test_vault_rejects_duplicate_registration(tmp_path):
     vault = HashVault(str(tmp_path / "vault" / "hash_vault.json"))
     vault.store("dup", "abc123", "sha256", 10)
