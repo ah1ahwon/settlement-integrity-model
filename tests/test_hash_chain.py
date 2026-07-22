@@ -99,27 +99,79 @@ def test_header_tampering_is_blocked(env):
 
 
 def test_deleted_record_is_blocked(env):
-    """전송 전 레코드 삭제 공격은 건수 불일치와 루트 해시 불일치로 차단되어야 한다."""
+    """레코드 삭제 공격은 차단되고, 삭제된 거래ID가 연쇄 오탐 없이 정확히 특정되어야 한다."""
     vault, batch, agent = env
     b = batch.run("file_delete_tamper", RECORD_COUNT, seed=7)
-    tamper_file(b.file_path, tamper_count=1, mode="delete", seed=15)
+    report = tamper_file(b.file_path, tamper_count=1, mode="delete", seed=15)
     r = agent.transmit(b.file_id, b.file_path)
 
     assert r.status == "BLOCKED"
     assert r.verified is False
     assert any(item.startswith("RECORD_COUNT_MISMATCH") for item in r.tampered_trans_ids)
+    non_marker = [x for x in r.tampered_trans_ids if not x.startswith("RECORD_COUNT_MISMATCH")]
+    assert non_marker == report.tampered_rows
+
+
+def test_multiple_deleted_records_are_localized_without_cascade(env):
+    """여러 건을 삭제해도 삭제 지점 이후 레코드까지 오탐하지 않고 삭제된 건만 특정해야 한다."""
+    vault, batch, agent = env
+    b = batch.run("file_multi_delete_tamper", 3_000, seed=9)
+    report = tamper_file(b.file_path, tamper_count=5, mode="delete", seed=17)
+    r = agent.transmit(b.file_id, b.file_path)
+
+    assert r.status == "BLOCKED"
+    non_marker = [x for x in r.tampered_trans_ids if not x.startswith("RECORD_COUNT_MISMATCH")]
+    assert set(non_marker) == set(report.tampered_rows)
+    assert len(non_marker) == 5
 
 
 def test_inserted_record_is_blocked(env):
-    """전송 전 레코드 삽입 공격은 건수 불일치와 루트 해시 불일치로 차단되어야 한다."""
+    """레코드 삽입 공격은 차단되고, 삽입된 가짜 거래ID가 정확히 특정되어야 한다."""
     vault, batch, agent = env
     b = batch.run("file_insert_tamper", RECORD_COUNT, seed=8)
-    tamper_file(b.file_path, tamper_count=1, mode="insert", seed=16)
+    report = tamper_file(b.file_path, tamper_count=1, mode="insert", seed=16)
     r = agent.transmit(b.file_id, b.file_path)
 
     assert r.status == "BLOCKED"
     assert r.verified is False
     assert any(item.startswith("RECORD_COUNT_MISMATCH") for item in r.tampered_trans_ids)
+    non_marker = [x for x in r.tampered_trans_ids if not x.startswith("RECORD_COUNT_MISMATCH")]
+    assert non_marker == report.tampered_rows
+
+
+def test_account_tampering_preserves_file_size(env):
+    """계좌번호는 자릿수가 그대로이므로, 계좌 변조는 파일 크기를 전혀 바꾸지 않아야 한다
+    (다른 레코드를 pandas로 재직렬화하면서 개행 문자 등이 바뀌어 크기가 흔들리면 안 됨)."""
+    vault, batch, agent = env
+    b = batch.run("file_account_size_check", RECORD_COUNT, seed=25)
+    size_before = os.path.getsize(b.file_path)
+    tamper_file(b.file_path, tamper_count=1, mode="account", seed=26)
+    size_after = os.path.getsize(b.file_path)
+
+    assert size_after == size_before
+
+
+def test_single_bit_flip_is_detected_and_localized(env):
+    """필드 전체가 아니라 단 1비트만 뒤집혀도 체인 루트가 달라져 탐지·차단되어야 한다."""
+    vault, batch, agent = env
+    b = batch.run("file_bitflip_tamper", RECORD_COUNT, seed=20)
+    report = tamper_file(b.file_path, mode="bitflip", seed=21)
+    r = agent.transmit(b.file_id, b.file_path)
+
+    assert r.status == "BLOCKED"
+    assert r.verified is False
+    assert r.original_hash != r.recomputed_hash
+    assert r.tampered_trans_ids == report.tampered_rows
+
+
+def test_repeated_single_bit_flips_are_always_detected(env):
+    """여러 다른 위치의 1비트 변조를 반복 시행해도 매번 탐지되어야 한다 (탐지가 우연에 의존하지 않음)."""
+    vault, batch, agent = env
+    for i in range(10):
+        b = batch.run(f"file_bitflip_{i}", RECORD_COUNT, seed=30 + i)
+        tamper_file(b.file_path, mode="bitflip", seed=40 + i)
+        r = agent.transmit(b.file_id, b.file_path)
+        assert r.status == "BLOCKED"
 
 
 def test_vault_rejects_duplicate_registration(tmp_path):

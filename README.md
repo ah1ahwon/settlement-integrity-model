@@ -11,9 +11,11 @@
 | Phase 1: 생성 및 격리 | 정산 파일 생성 → 스트림 종료 즉시 레코드 단위 해시 체인 계산 → Hash Vault 격리 보관 | `data_generator.py`, `settlement_batch.py`, `hashchain.py`, `hash_vault.py` |
 | Phase 2: 대기 및 전송 | 스케줄에 따라 전송 에이전트(FTP/SFTP 모사) 기동 | `transfer_agent.py` |
 | Phase 3: 교차 검증 및 통제 | 전송 직전 체인 재계산 → Vault 원본 루트 해시와 대사 → 불일치 시 즉각 차단(Drop)+알람+변조 위치 특정 | `transfer_agent.py`, `hashchain.py` |
-| Case B: 변조 공격 | Phase 1과 2 사이 시간차를 이용한 금액/계좌/헤더/레코드 구조 변조 | `tamper.py` |
+| Case B: 변조 공격 | Phase 1과 2 사이 시간차를 이용한 금액/계좌/헤더/레코드 구조/비트 단위 변조 | `tamper.py` |
 | 평가 지표 | 변조 탐지율, 변조 위치 특정 정확도, 처리 지연 시간(Latency Overhead) | `metrics.py` |
-| 실험 오케스트레이션 | Case A/B 반복 실행, 데이터 규모별 지연시간 스윕 | `simulate.py` |
+| RQ4 비교 | 파일 크기·수정시각 비교 방식(기존 단순 방식)과의 정량 비교 | `naive_baseline.py` |
+| 네트워크 지연 추정 | 대역폭 가정 기반 종단간(end-to-end) 전송 지연 추정 | `network.py` |
+| 실험 오케스트레이션 | Case A/B 반복 실행, 데이터 규모별 지연시간 스윕, RQ4 비교 | `simulate.py` |
 
 ### 해시 체이닝(Hash Chaining) 구조
 
@@ -63,7 +65,17 @@ python3 src/simulate.py --case b --records 100000 --trials 5 --tamper-mode heade
 python3 src/simulate.py --case b --records 100000 --trials 5 --tamper-count 1 --tamper-mode delete
 python3 src/simulate.py --case b --records 100000 --trials 5 --tamper-count 1 --tamper-mode insert
 
-# 데이터 규모별 처리 지연 시간만 측정
+# 비트 단위 변조 (필드 전체가 아니라 파일 원본 바이트 중 1비트만 변경)
+python3 src/simulate.py --case b --records 100000 --trials 10 --tamper-mode bitflip
+
+# 변조 건수 스윕 (1/5/10/50/100건으로 늘려가며 탐지율·위치 특정 정확도가
+# 변조 규모와 무관하게 100%인지 검증)
+python3 src/simulate.py --case sweep --records 100000 --sweep-counts 1 5 10 50 100 --sweep-trials 5
+
+# RQ4: 제안 모델 vs 파일 크기·수정시각 비교 방식(기존 단순 방식)
+python3 src/simulate.py --case naive --records 100000 --trials 10
+
+# 데이터 규모별 처리 지연 시간만 측정 (네트워크 전송 구간 추정 포함)
 python3 src/simulate.py --case latency --latency-sizes 1000 10000 50000 100000
 ```
 
@@ -71,8 +83,33 @@ python3 src/simulate.py --case latency --latency-sizes 1000 10000 50000 100000
 
 - `case_a_results.csv`, `case_b_results.csv`: 시행별 상세 결과 (Case B는 실제
   변조한 trans_id와 체인 기반으로 특정한 trans_id를 나란히 기록)
-- `latency_sweep.csv`, `latency_overhead.png`: 데이터 규모별 지연시간
-- `report.md`: 변조 탐지율 / 변조 위치 특정 정확도 / 처리 지연 시간 요약 리포트
+- `naive_baseline_results.csv`: 변조 방식별 기존(파일 속성 비교) 방식의 탐지율
+- `tamper_count_sweep.csv`: 변조 건수(1~100건 등)별 탐지율·위치 특정 정확도
+- `latency_sweep.csv`, `latency_overhead.png`: 데이터 규모별 지연시간(네트워크 추정 포함)
+- `report.md`: 변조 탐지율 / 변조 위치 특정 정확도 / RQ4 비교 / 변조 건수 스윕 / 처리 지연 시간 요약 리포트
+
+### RQ4: 기존 방식(파일 크기·수정시각 비교) 대비 개선 효과
+
+`--case naive`는 정산 파일 인터페이스 구간에서 실무적으로 흔히 쓰이는 가장
+단순한 무결성 점검(파일 크기·수정시각 비교)을 재현해, 제안 모델과 정량적으로
+대조한다. 각 변조 방식에 대해 두 가지 공격자를 가정한다 — (1) 변조 후
+수정시각을 그대로 두는 as-is 공격자, (2) `os.utime()`으로 수정시각까지
+원본과 동일하게 위조하는, 기초적인 안티포렌식 지식을 가진 공격자.
+
+100,000건 기준 실행 결과(예시, 시드에 따라 소폭 달라질 수 있음):
+
+| 변조 방식 | 기존 방식(as-is) | 기존 방식(mtime 위조 후) | 제안 모델 |
+|---|---|---|---|
+| amount(금액 변조) | 100% | 자릿수가 우연히 바뀔 때만 검출 | 100% |
+| account(계좌 변조, 자릿수 불변) | 100% | 0% | 100% |
+| delete(레코드 삭제) | 100% | 100%(크기 자체가 줄어듦) | 100% |
+| bitflip(1비트 변조) | 100% | 0% | 100% |
+
+즉 기존 방식은 파일 크기가 눈에 띄게 바뀌는 변조(레코드 삭제)만 안정적으로
+잡아내고, 자릿수를 유지한 채 값만 바꾸는 살라미 기법이나 1비트 변조처럼
+크기가 그대로인 공격에는 수정시각 위조 한 번으로 완전히 무력화된다. 제안
+모델은 내용을 직접 해시로 검증하므로 이런 메타데이터 위조와 무관하게
+항상 탐지한다.
 
 ### 참고: 지연시간 측정치에 대한 해석
 
@@ -84,6 +121,15 @@ python3 src/simulate.py --case latency --latency-sizes 1000 10000 50000 100000
 무시할 수 있는 수준이다. 또한 레코드 수에 비례해 선형(O(N))으로 증가하므로
 대용량 환경에서도 예측 가능한 성능을 보인다(`results/latency_overhead.png`
 참고).
+
+이 로컬 I/O 측정치는 실제 네트워크 전송 구간(SFTP 등)을 포함하지 않는다는
+한계가 있다. 이를 보완하기 위해 `src/network.py`가 회선 대역폭 가정(전용회선
+100Mbps/10Mbps, 인터넷 VPN 평균)에 기반한 종단간(end-to-end) 전송 시간을
+분석적으로 추정하며, `--case latency` 실행 시 `report.md`에 함께 기록된다.
+실측치가 아니라 추정치이므로 논문에 인용할 때는 반드시 "대역폭 가정 기반
+추정"이라고 명시해야 한다. 100,000건 기준으로 보면 해시 검증 오버헤드는
+전용회선 100Mbps 환경 종단간 지연의 약 18~19% 수준에 그쳐, 실제 전송
+구간까지 포함해도 검증 비용이 지배적이지 않음을 보여준다.
 
 ## 테스트
 
@@ -110,9 +156,11 @@ settlement-integrity-model/
 │   ├── tamper.py                 # Case B: 변조 공격 시뮬레이션
 │   ├── transfer_agent.py          # Phase 2&3: 전송 + 교차 검증 + 위치 특정
 │   ├── metrics.py                  # 평가 지표
-│   └── simulate.py                  # 실행 오케스트레이터 (CLI)
+│   ├── network.py                   # 네트워크 전송 구간 지연 추정 (대역폭 기반 분석 모델)
+│   └── simulate.py                   # 실행 오케스트레이터 (CLI)
 ├── tests/
-│   └── test_hash_chain.py
+│   ├── test_hash_chain.py
+│   └── test_network.py
 ├── data/          # 실행 시 생성되는 정산 파일/Vault/전송함/격리함 (gitignore)
 └── results/       # 실행 시 생성되는 결과 CSV/그래프/리포트 (gitignore)
 ```

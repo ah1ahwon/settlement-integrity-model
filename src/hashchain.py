@@ -59,17 +59,36 @@ def build_chain(file_path: str, file_id: str) -> ChainResult:
 
 
 def localize_tampering(original: ChainResult, recomputed: ChainResult) -> list[str]:
-    """체인 루트 불일치 시, 위치별 레코드 해시를 대조해 변조된 trans_id를 특정한다."""
+    """체인 루트 불일치 시, 변조된 trans_id를 특정한다.
+
+    레코드 수가 같으면(값 변조) 위치별 해시를 그대로 비교한다. 레코드 수가
+    다르면(삭제/삽입) 삭제·삽입 지점 이후 모든 레코드가 한 칸씩 밀리므로
+    위치 비교는 무의미해진다 — 대신 해시 집합의 차이를 이용해 실제로
+    없어졌거나 새로 생긴 레코드만 정확히 골라낸다.
+    """
     tampered: list[str] = []
     if original.header_hash != recomputed.header_hash:
         tampered.append("HEADER_MISMATCH")
 
-    n = min(len(original.record_hashes), len(recomputed.record_hashes))
-    for i in range(n):
-        if original.record_hashes[i] != recomputed.record_hashes[i]:
-            tampered.append(recomputed.trans_ids[i])
-
-    if len(original.record_hashes) != len(recomputed.record_hashes):
+    if len(original.record_hashes) == len(recomputed.record_hashes):
+        for i in range(len(original.record_hashes)):
+            if original.record_hashes[i] != recomputed.record_hashes[i]:
+                tampered.append(recomputed.trans_ids[i])
+    else:
+        recomputed_set = set(recomputed.record_hashes)
+        original_set = set(original.record_hashes)
+        deleted = [
+            original.trans_ids[i]
+            for i, h in enumerate(original.record_hashes)
+            if h not in recomputed_set
+        ]
+        inserted = [
+            recomputed.trans_ids[i]
+            for i, h in enumerate(recomputed.record_hashes)
+            if h not in original_set
+        ]
+        tampered.extend(deleted)
+        tampered.extend(inserted)
         tampered.append(
             f"RECORD_COUNT_MISMATCH(original={len(original.record_hashes)},"
             f"recomputed={len(recomputed.record_hashes)})"
