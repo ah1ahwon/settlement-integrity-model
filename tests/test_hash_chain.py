@@ -10,7 +10,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import pytest
 
+import transfer_agent as transfer_agent_module
 from hash_vault import HashVault, VaultIntegrityError
+from hashchain import build_chain as real_build_chain
 from settlement_batch import SettlementBatch
 from tamper import tamper_file
 from transfer_agent import TransferAgent
@@ -35,6 +37,29 @@ def test_normal_file_is_transmitted(env):
     assert r.verified is True
     assert r.original_hash == r.recomputed_hash
     assert os.path.exists(os.path.join(agent.transmitted_dir, "file_normal.csv"))
+
+
+def test_transmitted_file_is_the_verified_snapshot_when_source_changes(env, monkeypatch):
+    """스냅샷 생성 후 staging 원본이 바뀌어도 검증한 바이트만 전송되어야 한다."""
+    vault, batch, agent = env
+    b = batch.run("file_toctou", RECORD_COUNT, seed=101)
+    with open(b.file_path, "rb") as f:
+        expected_bytes = f.read()
+
+    def build_snapshot_then_mutate_source(snapshot_path, file_id):
+        with open(b.file_path, "ab") as source:
+            source.write(b"ATTACK_AFTER_SNAPSHOT")
+        return real_build_chain(snapshot_path, file_id)
+
+    monkeypatch.setattr(transfer_agent_module, "build_chain", build_snapshot_then_mutate_source)
+    r = agent.transmit(b.file_id, b.file_path)
+
+    transmitted_path = os.path.join(agent.transmitted_dir, "file_toctou.csv")
+    assert r.status == "TRANSMITTED"
+    with open(transmitted_path, "rb") as f:
+        assert f.read() == expected_bytes
+    with open(b.file_path, "rb") as f:
+        assert f.read() != expected_bytes
 
 
 def test_amount_tampering_is_blocked(env):

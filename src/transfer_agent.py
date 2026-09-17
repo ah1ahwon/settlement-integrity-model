@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import os
 import shutil
+import stat
+import tempfile
 import time
 from dataclasses import dataclass, field
 
@@ -46,68 +48,114 @@ class TransferAgent:
         self.quarantine_dir = quarantine_dir
         self.algorithm = algorithm
 
+    def _create_verification_snapshot(self, file_path: str) -> tuple[str, float]:
+        """전송 대상 파일을 보호된 임시 영역에 복제하고 그 경로를 반환한다.
+
+        이후 검증과 전송 승격은 모두 이 스냅샷을 대상으로 수행한다. 따라서
+        원본 staging 파일이 스냅샷 생성 이후 변경되더라도, 검증한 바이트와
+        실제 전송 대상으로 승격되는 바이트는 동일하다.
+        """
+        spool_dir = os.path.join(self.transmitted_dir, ".verification_spool")
+        os.makedirs(spool_dir, exist_ok=True)
+        os.chmod(spool_dir, stat.S_IRWXU)  # 0700: 에이전트 소유자만 접근
+
+        started = time.perf_counter()
+        fd, snapshot_path = tempfile.mkstemp(prefix="pending_", suffix=".csv", dir=spool_dir)
+        try:
+            with os.fdopen(fd, "wb") as snapshot, open(file_path, "rb") as source:
+                shutil.copyfileobj(source, snapshot, length=1024 * 1024)
+                snapshot.flush()
+                os.fsync(snapshot.fileno())
+            os.chmod(snapshot_path, stat.S_IRUSR | stat.S_IWUSR)  # 0600
+        except Exception:
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+            if os.path.exists(snapshot_path):
+                os.remove(snapshot_path)
+            raise
+        return snapshot_path, time.perf_counter() - started
+
     def transmit(self, file_id: str, file_path: str) -> TransferResult:
         os.makedirs(self.transmitted_dir, exist_ok=True)
         os.makedirs(self.quarantine_dir, exist_ok=True)
 
-        # Phase 3: 전송 에이전트가 파일을 읽어들이는 시점에 해시 체인 재계산
-        t0 = time.perf_counter()
-        recomputed = build_chain(file_path, file_id)
+        # 원본 경로를 검증한 뒤 다시 여는 TOCTOU를 막기 위해 먼저 보호된
+        # 스냅샷을 만든다. 이후 검증과 최종 승격은 동일한 스냅샷을 사용한다.
+        snapshot_path, snapshot_seconds = self._create_verification_snapshot(file_path)
         try:
+            # Phase 3: 보호된 스냅샷의 해시 체인을 재계산
+            t0 = time.perf_counter()
+            recomputed = build_chain(snapshot_path, file_id)
             original_record = self.vault.retrieve(file_id)
         except VaultIntegrityError as e:
             t1 = time.perf_counter()
+            if os.path.exists(snapshot_path):
+                os.remove(snapshot_path)
             return TransferResult(
                 file_id=file_id, status="BLOCKED", verified=False,
                 original_hash="", recomputed_hash=recomputed.root_hash,
-                verify_seconds=t1 - t0, io_seconds=0.0,
+                verify_seconds=t1 - t0, io_seconds=snapshot_seconds,
                 alerts=[f"Vault 조회 실패: {e}"],
             )
-        matched = recomputed.root_hash == original_record.hash_value
-        t1 = time.perf_counter()
+        except Exception:
+            if os.path.exists(snapshot_path):
+                os.remove(snapshot_path)
+            raise
+        try:
+            matched = recomputed.root_hash == original_record.hash_value
+            t1 = time.perf_counter()
 
-        alerts: list[str] = []
-        tampered_trans_ids: list[str] = []
-        t2 = time.perf_counter()
-        if matched:
-            dest = os.path.join(self.transmitted_dir, os.path.basename(file_path))
-            shutil.copy2(file_path, dest)
-            status = "TRANSMITTED"
-        else:
-            # 이상 상황에서만 체인 원장을 불러와 변조된 거래를 특정한다 (포렌식 경로).
-            try:
-                ledger = self.vault.retrieve_chain(file_id)
-                original_chain = ChainResult(
-                    root_hash=original_record.hash_value,
-                    header_hash=ledger.header_hash,
-                    record_hashes=ledger.record_hashes,
-                    trans_ids=ledger.trans_ids,
+            alerts: list[str] = []
+            tampered_trans_ids: list[str] = []
+            t2 = time.perf_counter()
+            if matched:
+                dest = os.path.join(self.transmitted_dir, os.path.basename(file_path))
+                os.replace(snapshot_path, dest)
+                status = "TRANSMITTED"
+            else:
+                # 이상 상황에서만 체인 원장을 불러와 변조된 거래를 특정한다 (포렌식 경로).
+                try:
+                    ledger = self.vault.retrieve_chain(file_id)
+                    original_chain = ChainResult(
+                        root_hash=original_record.hash_value,
+                        header_hash=ledger.header_hash,
+                        record_hashes=ledger.record_hashes,
+                        trans_ids=ledger.trans_ids,
+                    )
+                    tampered_trans_ids = localize_tampering(original_chain, recomputed)
+                except VaultIntegrityError:
+                    pass
+
+                # 실제로 검증한 스냅샷을 격리 증적으로 보존한다.
+                dest = os.path.join(self.quarantine_dir, os.path.basename(file_path))
+                os.replace(snapshot_path, dest)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                status = "BLOCKED"
+                alerts.append(
+                    f"[ALERT] file_id={file_id} 해시 체인 불일치 탐지 - 전송 차단됨 "
+                    f"(원본={original_record.hash_value[:12]}..., 재계산={recomputed.root_hash[:12]}..., "
+                    f"변조의심거래={tampered_trans_ids})"
                 )
-                tampered_trans_ids = localize_tampering(original_chain, recomputed)
-            except VaultIntegrityError:
-                pass
+            t3 = time.perf_counter()
 
-            dest = os.path.join(self.quarantine_dir, os.path.basename(file_path))
-            shutil.move(file_path, dest)
-            status = "BLOCKED"
-            alerts.append(
-                f"[ALERT] file_id={file_id} 해시 체인 불일치 탐지 - 전송 차단됨 "
-                f"(원본={original_record.hash_value[:12]}..., 재계산={recomputed.root_hash[:12]}..., "
-                f"변조의심거래={tampered_trans_ids})"
+            return TransferResult(
+                file_id=file_id,
+                status=status,
+                verified=matched,
+                original_hash=original_record.hash_value,
+                recomputed_hash=recomputed.root_hash,
+                verify_seconds=t1 - t0,
+                io_seconds=snapshot_seconds + (t3 - t2),
+                tampered_trans_ids=tampered_trans_ids,
+                alerts=alerts,
             )
-        t3 = time.perf_counter()
-
-        return TransferResult(
-            file_id=file_id,
-            status=status,
-            verified=matched,
-            original_hash=original_record.hash_value,
-            recomputed_hash=recomputed.root_hash,
-            verify_seconds=t1 - t0,
-            io_seconds=t3 - t2,
-            tampered_trans_ids=tampered_trans_ids,
-            alerts=alerts,
-        )
+        finally:
+            # 조회 실패나 예외 발생 시 미완료 스냅샷을 남기지 않는다.
+            if os.path.exists(snapshot_path):
+                os.remove(snapshot_path)
 
     def transmit_without_verification(self, file_path: str) -> float:
         """기존 방식(무결성 검증 없는 단순 전송) 대비 지연시간 비교용 베이스라인."""

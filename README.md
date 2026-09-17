@@ -10,7 +10,7 @@
 |---|---|---|
 | Phase 1: 생성 및 격리 | 정산 파일 생성 → 스트림 종료 즉시 레코드 단위 해시 체인 계산 → Hash Vault 격리 보관 | `data_generator.py`, `settlement_batch.py`, `hashchain.py`, `hash_vault.py` |
 | Phase 2: 대기 및 전송 | 스케줄에 따라 전송 에이전트(FTP/SFTP 모사) 기동 | `transfer_agent.py` |
-| Phase 3: 교차 검증 및 통제 | 전송 직전 체인 재계산 → Vault 원본 루트 해시와 대사 → 불일치 시 즉각 차단(Drop)+알람+변조 위치 특정 | `transfer_agent.py`, `hashchain.py` |
+| Phase 3: 교차 검증 및 통제 | 보호된 임시 스냅샷 생성 → 스냅샷 체인 재계산 → Vault 원본 루트 해시와 대사 → 일치 시 검증한 스냅샷을 전송함으로 원자적 승격, 불일치 시 동일 스냅샷 격리+알람+변조 위치 특정 | `transfer_agent.py`, `hashchain.py` |
 | Case B: 변조 공격 | Phase 1과 2 사이 시간차를 이용한 금액/계좌/헤더/레코드 구조/비트 단위 변조 | `tamper.py` |
 | 평가 지표 | 변조 탐지율, 변조 위치 특정 정확도, 처리 지연 시간(Latency Overhead) | `metrics.py` |
 | RQ4 비교 | 파일 크기·수정시각 비교 방식(기존 단순 방식)과의 정량 비교 | `naive_baseline.py` |
