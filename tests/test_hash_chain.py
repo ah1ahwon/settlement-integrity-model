@@ -36,7 +36,32 @@ def test_normal_file_is_transmitted(env):
     assert r.status == "TRANSMITTED"
     assert r.verified is True
     assert r.original_hash == r.recomputed_hash
+    assert r.original_file_hash == r.recomputed_file_hash
     assert os.path.exists(os.path.join(agent.transmitted_dir, "file_normal.csv"))
+
+
+@pytest.mark.parametrize("mutation", ["newline", "blank_line"])
+def test_file_byte_changes_are_blocked_even_when_record_chain_is_unchanged(env, mutation):
+    """레코드가 같아도 원본 바이트가 달라지면 파일 전체 해시가 차단해야 한다."""
+    vault, batch, agent = env
+    b = batch.run(f"file_bytes_{mutation}", RECORD_COUNT, seed=102)
+
+    with open(b.file_path, "rb") as f:
+        data = f.read()
+    if mutation == "newline":
+        changed = data.replace(b"\r\n", b"\n")
+    else:
+        first_newline = data.index(b"\n") + 1
+        changed = data[:first_newline] + b"\r\n" + data[first_newline:]
+    with open(b.file_path, "wb") as f:
+        f.write(changed)
+
+    r = agent.transmit(b.file_id, b.file_path)
+
+    assert r.status == "BLOCKED"
+    assert r.original_hash == r.recomputed_hash
+    assert r.original_file_hash != r.recomputed_file_hash
+    assert r.tampered_trans_ids == ["FILE_BYTES_MISMATCH"]
 
 
 def test_transmitted_file_is_the_verified_snapshot_when_source_changes(env, monkeypatch):

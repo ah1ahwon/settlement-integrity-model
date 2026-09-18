@@ -8,9 +8,9 @@
 
 | 논문상 단계 | 설명 | 구현 모듈 |
 |---|---|---|
-| Phase 1: 생성 및 격리 | 정산 파일 생성 → 스트림 종료 즉시 레코드 단위 해시 체인 계산 → Hash Vault 격리 보관 | `data_generator.py`, `settlement_batch.py`, `hashchain.py`, `hash_vault.py` |
+| Phase 1: 생성 및 격리 | 정산 파일 생성 → 스트림 종료 즉시 파일 전체 SHA-256과 레코드 단위 해시 체인 계산 → Hash Vault 격리 보관 | `data_generator.py`, `settlement_batch.py`, `hashchain.py`, `hash_vault.py` |
 | Phase 2: 대기 및 전송 | 스케줄에 따라 전송 에이전트(FTP/SFTP 모사) 기동 | `transfer_agent.py` |
-| Phase 3: 교차 검증 및 통제 | 보호된 임시 스냅샷 생성 → 스냅샷 체인 재계산 → Vault 원본 루트 해시와 대사 → 일치 시 검증한 스냅샷을 전송함으로 원자적 승격, 불일치 시 동일 스냅샷 격리+알람+변조 위치 특정 | `transfer_agent.py`, `hashchain.py` |
+| Phase 3: 교차 검증 및 통제 | 보호된 임시 스냅샷 생성 → 파일 전체 해시와 레코드 체인 재계산 → Vault 원본값과 이중 대사 → 모두 일치할 때만 검증한 스냅샷을 전송함으로 원자적 승격, 불일치 시 동일 스냅샷 격리+알람+변조 위치 특정 | `transfer_agent.py`, `hashchain.py` |
 | Case B: 변조 공격 | Phase 1과 2 사이 시간차를 이용한 금액/계좌/헤더/레코드 구조/비트 단위 변조 | `tamper.py` |
 | 평가 지표 | 변조 탐지율, 변조 위치 특정 정확도, 처리 지연 시간(Latency Overhead) | `metrics.py` |
 | RQ4 비교 | 파일 크기·수정시각 비교 방식(기존 단순 방식)과의 정량 비교 | `naive_baseline.py` |
@@ -19,12 +19,25 @@
 
 ### 해시 체이닝(Hash Chaining) 구조
 
-파일 전체를 한 번에 해싱하는 방식(단일 SHA-256) 대신, 정산 파일의 각
-거래(DATA 레코드)를 순서대로 이전 체인값과 연결해 누적 해싱한다. 컬럼명과
-순서를 바꾸는 헤더 변조도 탐지하기 위해 헤더 해시를 체인 루트에 먼저
-반영한다.
+제안 모델은 역할이 다른 두 무결성 값을 한 번의 파일 읽기에서 함께 계산한다.
+
+- **파일 전체 해시(file hash)**: 개행 방식, 빈 줄, 인코딩, 파일 끝 데이터까지
+  포함한 원본 바이트 전체의 SHA-256이다. 파일 바이트가 하나라도 달라지면
+  전송을 차단한다.
+- **레코드 해시 체인(chain root)**: CSV 헤더와 각 업무 레코드의 내용·순서를
+  누적 해싱한다. 체인이 불일치하면 레코드별 해시 원장을 대조해 변조된
+  거래 ID를 특정한다.
+
+파일 전체 해시가 불일치하지만 레코드 체인이 일치하는 경우에는 개행 변경이나
+빈 줄 삽입처럼 업무 레코드 외부의 바이트 수준 변경으로 분류하고
+`FILE_BYTES_MISMATCH`로 차단한다. 두 값이 모두 일치해야만 전송이 허용된다.
+
+파일 전체 SHA-256만으로는 변조 위치를 알 수 없으므로, 정산 파일의 각
+거래(DATA 레코드)를 이전 체인값과 연결해 누적 해싱한다. 컬럼명과 순서를
+바꾸는 헤더 변조도 탐지하기 위해 헤더 해시를 체인에 먼저 반영한다.
 
 ```
+file_hash = SHA256(file_raw_bytes)
 chain_0 = SHA256(genesis_seed)
 chain_header = SHA256(chain_0 || SHA256(header))
 chain_i = SHA256(chain_{i-1} || SHA256(record_i))   for i = 1..N

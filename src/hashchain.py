@@ -1,4 +1,4 @@
-"""레코드 단위 해시 체이닝(Hash Chaining).
+"""파일 전체 해시와 레코드 단위 해시 체이닝(Hash Chaining).
 
 파일 전체를 한 번에 해싱하는 대신, 정산 파일의 각 DATA 레코드(거래 1건)를
 순서대로 이전 체인값과 연결하여 다음과 같이 누적 해싱한다.
@@ -6,11 +6,9 @@
     chain_0 = SHA256(genesis_seed)
     chain_i = SHA256(chain_{i-1} || SHA256(record_i))   for i = 1..N
 
-최종 chain_N을 '체인 루트 해시'로 삼아 Hash Vault에 저장한다. 체인 루트가
-원본과 다르면 파일이 변조된 것이며, 레코드별 해시(SHA256(record_i))를
-원본과 위치별로 대조하면 변조된 정확한 거래(trans_id)를 특정(Localize)할
-수 있다 — 파일 전체 해시 방식으로는 "변조 여부"만 알 수 있었던 것에서
-한 걸음 더 나아간 포렌식 기능이다.
+원본 파일의 모든 바이트에 대한 SHA-256도 같은 읽기 과정에서 계산한다.
+파일 전체 해시는 바이트 단위 변경을 빠짐없이 탐지하고, 최종 chain_N과
+레코드별 해시 원장은 업무 레코드의 구조적 변조와 위치를 특정한다.
 """
 
 from __future__ import annotations
@@ -21,6 +19,7 @@ from dataclasses import dataclass
 
 @dataclass
 class ChainResult:
+    file_hash: str
     root_hash: str
     header_hash: str
     record_hashes: list[str]
@@ -32,21 +31,25 @@ def genesis_seed(file_id: str) -> str:
 
 
 def build_chain(file_path: str, file_id: str) -> ChainResult:
-    """정산 CSV 파일을 레코드(행) 단위로 읽어 해시 체인을 구성한다.
+    """한 번의 파일 읽기로 전체 바이트 해시와 레코드 해시 체인을 구성한다.
 
-    바이트 단위 원본 라인을 그대로 해싱하므로 필드 값의 공백 하나, 자릿수
-    하나가 바뀌어도 해당 레코드 해시와 이후 체인 전체가 달라진다. 헤더도
-    체인 루트에 포함하여 컬럼 순서/명칭 변조까지 탐지한다.
+    file_hash는 개행·빈 줄·인코딩을 포함한 파일의 모든 원본 바이트를
+    SHA-256으로 계산한다. 레코드 체인은 CSV의 헤더와 비어 있지 않은 각
+    레코드 내용을 연결해 구조적 변조를 탐지하고 위치를 특정하는 데 쓴다.
     """
     record_hashes: list[str] = []
     trans_ids: list[str] = []
+    file_hasher = hashlib.sha256()
     chain = hashlib.sha256(genesis_seed(file_id).encode("utf-8")).hexdigest()
 
     with open(file_path, "rb") as f:
-        header = f.readline().rstrip(b"\r\n")
+        raw_header = f.readline()
+        file_hasher.update(raw_header)
+        header = raw_header.rstrip(b"\r\n")
         header_hash = hashlib.sha256(header).hexdigest()
         chain = hashlib.sha256((chain + header_hash).encode("utf-8")).hexdigest()
         for raw_line in f:
+            file_hasher.update(raw_line)
             line = raw_line.rstrip(b"\r\n")
             if not line:
                 continue
@@ -55,7 +58,13 @@ def build_chain(file_path: str, file_id: str) -> ChainResult:
             trans_ids.append(line.split(b",", 1)[0].decode("utf-8"))
             chain = hashlib.sha256((chain + record_hash).encode("utf-8")).hexdigest()
 
-    return ChainResult(root_hash=chain, header_hash=header_hash, record_hashes=record_hashes, trans_ids=trans_ids)
+    return ChainResult(
+        file_hash=file_hasher.hexdigest(),
+        root_hash=chain,
+        header_hash=header_hash,
+        record_hashes=record_hashes,
+        trans_ids=trans_ids,
+    )
 
 
 def localize_tampering(original: ChainResult, recomputed: ChainResult) -> list[str]:

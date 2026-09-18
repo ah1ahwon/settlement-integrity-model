@@ -3,10 +3,10 @@
 Phase 2: 정해진 스케줄링에 따라 파일 전송 에이전트(FTP/SFTP Client, 모사)가
 기동되어 외부 기관으로 파일 전송을 시도한다.
 
-Phase 3: 파일을 읽어 들이는 시점에 자체적으로 레코드 단위 해시 체인을
-재계산하고, Hash Vault에 보관된 원본 체인 루트 해시와 논리적 대사
-(Matching)를 수행한다. 값이 일치할 경우에만 전송을 허용하며, 단 1비트라도
-불일치 시 프로세스를 즉각 차단(Drop)하고 관리자에게 알람을 전송한다.
+Phase 3: 보호된 임시 스냅샷의 파일 전체 해시와 레코드 단위 해시 체인을
+재계산하고, Hash Vault에 보관된 두 원본값과 논리적 대사(Matching)를
+수행한다. 두 값이 모두 일치할 경우에만 전송을 허용하며, 단 1비트라도
+불일치하면 프로세스를 즉각 차단(Drop)하고 관리자에게 알람을 전송한다.
 
 체인 루트가 불일치하는 경우에만(=이상 상황에서만) Hash Vault의 체인
 원장을 추가로 불러와, 레코드별 해시를 위치 대조하여 어느 거래(trans_id)가
@@ -34,6 +34,8 @@ class TransferResult:
     verified: bool
     original_hash: str
     recomputed_hash: str
+    original_file_hash: str
+    recomputed_file_hash: str
     verify_seconds: float   # Phase 3: 체인 재계산 + 대사 소요 시간
     io_seconds: float        # Phase 2/3: 파일 복사 또는 격리 이동 소요 시간
     tampered_trans_ids: list[str] = field(default_factory=list)  # 변조 위치 특정 결과
@@ -96,6 +98,7 @@ class TransferAgent:
             return TransferResult(
                 file_id=file_id, status="BLOCKED", verified=False,
                 original_hash="", recomputed_hash=recomputed.root_hash,
+                original_file_hash="", recomputed_file_hash=recomputed.file_hash,
                 verify_seconds=t1 - t0, io_seconds=snapshot_seconds,
                 alerts=[f"Vault 조회 실패: {e}"],
             )
@@ -104,7 +107,9 @@ class TransferAgent:
                 os.remove(snapshot_path)
             raise
         try:
-            matched = recomputed.root_hash == original_record.hash_value
+            chain_matched = recomputed.root_hash == original_record.hash_value
+            file_matched = bool(original_record.file_hash) and recomputed.file_hash == original_record.file_hash
+            matched = chain_matched and file_matched
             t1 = time.perf_counter()
 
             alerts: list[str] = []
@@ -116,17 +121,21 @@ class TransferAgent:
                 status = "TRANSMITTED"
             else:
                 # 이상 상황에서만 체인 원장을 불러와 변조된 거래를 특정한다 (포렌식 경로).
-                try:
-                    ledger = self.vault.retrieve_chain(file_id)
-                    original_chain = ChainResult(
-                        root_hash=original_record.hash_value,
-                        header_hash=ledger.header_hash,
-                        record_hashes=ledger.record_hashes,
-                        trans_ids=ledger.trans_ids,
-                    )
-                    tampered_trans_ids = localize_tampering(original_chain, recomputed)
-                except VaultIntegrityError:
-                    pass
+                if chain_matched and not file_matched:
+                    tampered_trans_ids = ["FILE_BYTES_MISMATCH"]
+                else:
+                    try:
+                        ledger = self.vault.retrieve_chain(file_id)
+                        original_chain = ChainResult(
+                            file_hash=original_record.file_hash,
+                            root_hash=original_record.hash_value,
+                            header_hash=ledger.header_hash,
+                            record_hashes=ledger.record_hashes,
+                            trans_ids=ledger.trans_ids,
+                        )
+                        tampered_trans_ids = localize_tampering(original_chain, recomputed)
+                    except VaultIntegrityError:
+                        pass
 
                 # 실제로 검증한 스냅샷을 격리 증적으로 보존한다.
                 dest = os.path.join(self.quarantine_dir, os.path.basename(file_path))
@@ -135,8 +144,9 @@ class TransferAgent:
                     os.remove(file_path)
                 status = "BLOCKED"
                 alerts.append(
-                    f"[ALERT] file_id={file_id} 해시 체인 불일치 탐지 - 전송 차단됨 "
-                    f"(원본={original_record.hash_value[:12]}..., 재계산={recomputed.root_hash[:12]}..., "
+                    f"[ALERT] file_id={file_id} 무결성 값 불일치 탐지 - 전송 차단됨 "
+                    f"(파일해시일치={file_matched}, 체인일치={chain_matched}, "
+                    f"원본체인={original_record.hash_value[:12]}..., 재계산체인={recomputed.root_hash[:12]}..., "
                     f"변조의심거래={tampered_trans_ids})"
                 )
             t3 = time.perf_counter()
@@ -147,6 +157,8 @@ class TransferAgent:
                 verified=matched,
                 original_hash=original_record.hash_value,
                 recomputed_hash=recomputed.root_hash,
+                original_file_hash=original_record.file_hash,
+                recomputed_file_hash=recomputed.file_hash,
                 verify_seconds=t1 - t0,
                 io_seconds=snapshot_seconds + (t3 - t2),
                 tampered_trans_ids=tampered_trans_ids,

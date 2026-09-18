@@ -200,7 +200,9 @@ def _write_case_csv(path: str, rows: list[tuple]):
     with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["file_id", "record_count", "status", "verified",
-                    "hashing_ms", "verify_ms", "tampered_rows_ground_truth", "tampered_rows_localized"])
+                    "hashing_ms", "verify_ms", "original_file_hash", "recomputed_file_hash",
+                    "original_chain_hash", "recomputed_chain_hash",
+                    "tampered_rows_ground_truth", "tampered_rows_localized"])
         for row in rows:
             if len(row) == 3:
                 b, r, report = row
@@ -212,6 +214,8 @@ def _write_case_csv(path: str, rows: list[tuple]):
                 localized = ""
             w.writerow([b.file_id, b.record_count, r.status, r.verified,
                         round(b.hashing_seconds * 1000, 3), round(r.verify_seconds * 1000, 3),
+                        r.original_file_hash, r.recomputed_file_hash,
+                        r.original_hash, r.recomputed_hash,
                         ground_truth, localized])
 
 

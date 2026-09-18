@@ -10,8 +10,8 @@
   2. 동일 file_id에 대한 재기록(덮어쓰기)을 금지하는 write-once 저장소
 
 저장 구조는 두 층으로 나뉜다.
-  - vault.json      : file_id -> 체인 루트 해시(+메타데이터). 매 전송마다
-                       빠르게 대사(matching)하는 상시 경로에서 사용된다.
+  - vault.json      : file_id -> 파일 전체 해시 + 체인 루트 해시(+메타데이터).
+                       매 전송마다 두 값을 대사하는 상시 경로에서 사용된다.
   - chains/<id>.json: file_id -> 레코드별 해시 배열 + trans_id 목록(체인
                        원장). 루트 해시가 불일치한 '이상 상황'에서만 불러와
                        변조된 거래를 특정(localize)하는 데 사용한다.
@@ -36,6 +36,7 @@ class VaultRecord:
     hash_value: str
     algorithm: str
     record_count: int
+    file_hash: str = ""
     stored_at: float = field(default_factory=time.time)
 
 
@@ -71,14 +72,21 @@ class HashVault:
 
     def store(self, file_id: str, hash_value: str, algorithm: str, record_count: int,
               header_hash: str | None = None, record_hashes: list[str] | None = None,
-              trans_ids: list[str] | None = None) -> VaultRecord:
+              trans_ids: list[str] | None = None, file_hash: str = "") -> VaultRecord:
         """체인 루트 해시를 격리 보관한다. 동일 file_id 재등록은 변조 시도로 간주하여 거부한다."""
         data = self._read_all()
         if file_id in data:
             raise VaultIntegrityError(f"'{file_id}'는 이미 Vault에 등록되어 있습니다 (write-once 정책 위반).")
-        record = VaultRecord(file_id=file_id, hash_value=hash_value, algorithm=algorithm, record_count=record_count)
+        record = VaultRecord(
+            file_id=file_id,
+            hash_value=hash_value,
+            algorithm=algorithm,
+            record_count=record_count,
+            file_hash=file_hash,
+        )
         data[file_id] = {
             "hash_value": record.hash_value,
+            "file_hash": record.file_hash,
             "algorithm": record.algorithm,
             "record_count": record.record_count,
             "stored_at": record.stored_at,
