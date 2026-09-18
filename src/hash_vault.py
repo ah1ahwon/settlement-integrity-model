@@ -1,33 +1,26 @@
-"""Hash Vault: 접근이 엄격히 통제되는 별도의 안전한 해시 저장소(시뮬레이션).
+"""원자적 write-once Hash Vault 시뮬레이션.
 
-연구계획서 Phase 1의 "이 값은 기존 서버가 아닌, 접근이 엄격히 통제되는
-별도의 안전한 Hash Vault에 전송되어 격리 보관됩니다" 를 재현한다.
+신규 엔트리는 메타데이터와 레코드 체인 원장을 하나의 JSON 번들로 구성한 뒤,
+동일 디렉터리의 임시 파일에 fsync하고 원자적 hard-link로 공개한다. 따라서
+기록 도중 중단되어도 부분 기록을 관찰하지 않으며 동시 등록도 덮어쓸 수 없다.
 
-실제 운영 환경이라면 별도 네트워크 세그먼트의 HSM/KMS나 write-once
-스토리지가 되겠지만, 본 시뮬레이션에서는 다음 두 가지로 '격리 및 통제'
-성격을 모사한다.
-  1. 파일시스템 권한을 0600으로 제한 (소유자만 접근 가능)
-  2. 동일 file_id에 대한 재기록(덮어쓰기)을 금지하는 write-once 저장소
-
-저장 구조는 두 층으로 나뉜다.
-  - vault.json      : file_id -> 파일 전체 해시 + 체인 루트 해시(+메타데이터).
-                       매 전송마다 두 값을 대사하는 상시 경로에서 사용된다.
-  - chains/<id>.json: file_id -> 레코드별 해시 배열 + trans_id 목록(체인
-                       원장). 루트 해시가 불일치한 '이상 상황'에서만 불러와
-                       변조된 거래를 특정(localize)하는 데 사용한다.
+이전 버전의 ``hash_vault.json`` 및 ``chains/<id>.json``은 읽기 호환성을
+유지하지만, 신규 저장은 ``entries/<id>.json``만 사용한다.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
 import stat
+import tempfile
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 
 
 class VaultIntegrityError(Exception):
-    """Vault에 이미 등록된 해시를 다시 등록하려 하거나, 존재하지 않는 항목을 조회할 때 발생."""
+    """Vault의 write-once·형식·조회 무결성 규칙을 위반했을 때 발생한다."""
 
 
 @dataclass
@@ -48,82 +41,143 @@ class ChainLedger:
     trans_ids: list[str]
 
 
+_SAFE_FILE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+
+
 class HashVault:
     def __init__(self, vault_path: str, chain_dir: str | None = None):
         self.vault_path = vault_path
-        self.chain_dir = chain_dir or os.path.join(os.path.dirname(vault_path), "chains")
-        os.makedirs(os.path.dirname(vault_path), exist_ok=True)
+        self.vault_dir = os.path.dirname(vault_path)
+        self.chain_dir = chain_dir or os.path.join(self.vault_dir, "chains")
+        self.entry_dir = os.path.join(self.vault_dir, "entries")
+        os.makedirs(self.vault_dir, exist_ok=True)
         os.makedirs(self.chain_dir, exist_ok=True)
+        os.makedirs(self.entry_dir, exist_ok=True)
         if not os.path.exists(vault_path):
-            self._write_all({})
-        os.chmod(vault_path, stat.S_IRUSR | stat.S_IWUSR)  # 0600: 소유자만 읽기/쓰기
+            self._atomic_write_json(vault_path, {})
+        os.chmod(vault_path, stat.S_IRUSR | stat.S_IWUSR)
 
-    def _read_all(self) -> dict:
-        with open(self.vault_path, "r", encoding="utf-8") as f:
-            return json.load(f)
+    @staticmethod
+    def _validate_file_id(file_id: str) -> None:
+        if not isinstance(file_id, str) or not _SAFE_FILE_ID.fullmatch(file_id):
+            raise VaultIntegrityError(
+                "file_id는 영문·숫자로 시작하고 영문·숫자·점·밑줄·하이픈만 포함해야 합니다."
+            )
 
-    def _write_all(self, data: dict) -> None:
-        with open(self.vault_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        os.chmod(self.vault_path, stat.S_IRUSR | stat.S_IWUSR)
+    @staticmethod
+    def _fsync_directory(directory: str) -> None:
+        try:
+            fd = os.open(directory, os.O_RDONLY)
+        except OSError:
+            return
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+
+    def _atomic_write_json(self, path: str, payload: dict, *, exclusive: bool = False) -> None:
+        """완전 기록된 JSON만 원자적으로 공개한다."""
+        directory = os.path.dirname(path)
+        os.makedirs(directory, exist_ok=True)
+        fd, temp_path = tempfile.mkstemp(prefix=".vault-tmp-", suffix=".json", dir=directory)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                json.dump(payload, stream, ensure_ascii=False, separators=(",", ":"))
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
+            if exclusive:
+                os.link(temp_path, path)
+                os.unlink(temp_path)
+            else:
+                os.replace(temp_path, path)
+            self._fsync_directory(directory)
+        finally:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+
+    def _read_json(self, path: str) -> dict:
+        try:
+            with open(path, "r", encoding="utf-8") as stream:
+                payload = json.load(stream)
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise VaultIntegrityError(f"Vault 엔트리를 안전하게 읽을 수 없습니다: {exc}") from exc
+        if not isinstance(payload, dict):
+            raise VaultIntegrityError("Vault 엔트리 형식이 객체가 아닙니다.")
+        return payload
+
+    def _read_legacy_index(self) -> dict:
+        return self._read_json(self.vault_path)
+
+    def _entry_path(self, file_id: str) -> str:
+        self._validate_file_id(file_id)
+        return os.path.join(self.entry_dir, f"{file_id}.json")
 
     def _chain_path(self, file_id: str) -> str:
+        self._validate_file_id(file_id)
         return os.path.join(self.chain_dir, f"{file_id}.json")
 
     def store(self, file_id: str, hash_value: str, algorithm: str, record_count: int,
               header_hash: str | None = None, record_hashes: list[str] | None = None,
               trans_ids: list[str] | None = None, file_hash: str = "") -> VaultRecord:
-        """체인 루트 해시를 격리 보관한다. 동일 file_id 재등록은 변조 시도로 간주하여 거부한다."""
-        data = self._read_all()
-        if file_id in data:
+        """메타데이터와 체인 원장을 하나의 원자적 write-once 번들로 저장한다."""
+        entry_path = self._entry_path(file_id)
+        legacy = self._read_legacy_index()
+        if file_id in legacy or os.path.exists(entry_path):
             raise VaultIntegrityError(f"'{file_id}'는 이미 Vault에 등록되어 있습니다 (write-once 정책 위반).")
-        record = VaultRecord(
-            file_id=file_id,
-            hash_value=hash_value,
-            algorithm=algorithm,
-            record_count=record_count,
-            file_hash=file_hash,
-        )
-        data[file_id] = {
-            "hash_value": record.hash_value,
-            "file_hash": record.file_hash,
-            "algorithm": record.algorithm,
-            "record_count": record.record_count,
-            "stored_at": record.stored_at,
-        }
-        self._write_all(data)
 
+        record = VaultRecord(file_id=file_id, hash_value=hash_value, algorithm=algorithm,
+                             record_count=record_count, file_hash=file_hash)
+        ledger = None
         if record_hashes is not None:
-            chain_path = self._chain_path(file_id)
-            if os.path.exists(chain_path):
-                raise VaultIntegrityError(f"'{file_id}'의 체인 원장이 이미 존재합니다 (write-once 정책 위반).")
-            with open(chain_path, "w", encoding="utf-8") as f:
-                json.dump({
-                    "header_hash": header_hash or "",
-                    "record_hashes": record_hashes,
-                    "trans_ids": trans_ids or [],
-                }, f)
-            os.chmod(chain_path, stat.S_IRUSR | stat.S_IWUSR)
+            ledger = {"header_hash": header_hash or "", "record_hashes": list(record_hashes),
+                      "trans_ids": list(trans_ids or [])}
+        payload = {"schema_version": 2, "record": asdict(record), "chain": ledger}
+        try:
+            self._atomic_write_json(entry_path, payload, exclusive=True)
+        except FileExistsError as exc:
+            raise VaultIntegrityError(
+                f"'{file_id}'는 동시에 다른 작업이 먼저 등록했습니다 (write-once 정책 위반)."
+            ) from exc
+        return record
 
+    @staticmethod
+    def _record_from_payload(file_id: str, payload: dict) -> VaultRecord:
+        try:
+            record = VaultRecord(**payload["record"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise VaultIntegrityError(f"'{file_id}'의 Vault 메타데이터 형식이 손상되었습니다.") from exc
+        if record.file_id != file_id or record.record_count < 0:
+            raise VaultIntegrityError(f"'{file_id}'의 Vault 메타데이터 값이 유효하지 않습니다.")
         return record
 
     def retrieve(self, file_id: str) -> VaultRecord:
-        data = self._read_all()
+        entry_path = self._entry_path(file_id)
+        if os.path.exists(entry_path):
+            return self._record_from_payload(file_id, self._read_json(entry_path))
+        data = self._read_legacy_index()
         if file_id not in data:
             raise VaultIntegrityError(f"'{file_id}'에 해당하는 원본 해시가 Vault에 없습니다.")
-        entry = data[file_id]
-        return VaultRecord(file_id=file_id, **entry)
+        try:
+            return VaultRecord(file_id=file_id, **data[file_id])
+        except (TypeError, ValueError) as exc:
+            raise VaultIntegrityError(f"'{file_id}'의 기존 Vault 메타데이터 형식이 손상되었습니다.") from exc
 
     def retrieve_chain(self, file_id: str) -> ChainLedger:
-        """변조 탐지 시에만 호출되는 포렌식 경로: 원본 레코드별 해시 원장을 불러온다."""
-        chain_path = self._chain_path(file_id)
-        if not os.path.exists(chain_path):
-            raise VaultIntegrityError(f"'{file_id}'에 해당하는 체인 원장이 Vault에 없습니다.")
-        with open(chain_path, "r", encoding="utf-8") as f:
-            payload = json.load(f)
-        return ChainLedger(
-            file_id=file_id,
-            header_hash=payload.get("header_hash", ""),
-            record_hashes=payload["record_hashes"],
-            trans_ids=payload["trans_ids"],
-        )
+        """변조 탐지 시에만 원본 레코드별 해시 원장을 불러온다."""
+        entry_path = self._entry_path(file_id)
+        if os.path.exists(entry_path):
+            chain = self._read_json(entry_path).get("chain")
+            if not isinstance(chain, dict):
+                raise VaultIntegrityError(f"'{file_id}'에 해당하는 체인 원장이 Vault에 없습니다.")
+        else:
+            chain_path = self._chain_path(file_id)
+            if not os.path.exists(chain_path):
+                raise VaultIntegrityError(f"'{file_id}'에 해당하는 체인 원장이 Vault에 없습니다.")
+            chain = self._read_json(chain_path)
+        try:
+            return ChainLedger(file_id=file_id, header_hash=chain.get("header_hash", ""),
+                               record_hashes=list(chain["record_hashes"]),
+                               trans_ids=list(chain["trans_ids"]))
+        except (KeyError, TypeError) as exc:
+            raise VaultIntegrityError(f"'{file_id}'의 체인 원장 형식이 손상되었습니다.") from exc

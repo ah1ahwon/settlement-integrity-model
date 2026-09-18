@@ -1,0 +1,5 @@
+mode,trials,naive_detection_rate_asis_pct,naive_detection_rate_mtime_forged_pct,proposed_detection_rate_mtime_forged_pct,proposed_reason_codes
+amount,5,100.0,80.0,100.0,"{""FILE_AND_CHAIN_MISMATCH"": 5}"
+account,5,100.0,0.0,100.0,"{""FILE_AND_CHAIN_MISMATCH"": 5}"
+delete,5,100.0,100.0,100.0,"{""FILE_AND_CHAIN_MISMATCH"": 5}"
+bitflip,5,100.0,0.0,100.0,"{""FILE_AND_CHAIN_MISMATCH"": 5}"

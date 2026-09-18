@@ -26,6 +26,8 @@ class BatchResult:
     record_count: int
     generation_seconds: float  # 데이터 생성 + 파일 쓰기 소요 시간
     hashing_seconds: float     # 스트림 종료 직후 해시 체인 계산 소요 시간
+    vault_store_seconds: float  # 원자적 Vault 영속화 소요 시간
+    integrity_seconds: float    # Phase 1 전체(해시 계산 + Vault 저장)
 
 
 class SettlementBatch:
@@ -51,6 +53,7 @@ class SettlementBatch:
                           header_hash=chain.header_hash,
                           record_hashes=chain.record_hashes, trans_ids=chain.trans_ids,
                           file_hash=chain.file_hash)
+        t3 = time.perf_counter()
 
         return BatchResult(
             file_id=file_id,
@@ -60,4 +63,6 @@ class SettlementBatch:
             record_count=record_count,
             generation_seconds=t1 - t0,
             hashing_seconds=t2 - t1,
+            vault_store_seconds=t3 - t2,
+            integrity_seconds=t3 - t1,
         )

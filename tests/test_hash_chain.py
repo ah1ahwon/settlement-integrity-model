@@ -15,7 +15,7 @@ from hash_vault import HashVault, VaultIntegrityError
 from hashchain import build_chain as real_build_chain
 from settlement_batch import SettlementBatch
 from tamper import tamper_file
-from transfer_agent import TransferAgent
+from transfer_agent import ReasonCode, TransferAgent
 
 RECORD_COUNT = 200
 
@@ -37,6 +37,8 @@ def test_normal_file_is_transmitted(env):
     assert r.verified is True
     assert r.original_hash == r.recomputed_hash
     assert r.original_file_hash == r.recomputed_file_hash
+    assert r.reason_code == ReasonCode.OK.value
+    assert r.phase3_gate_seconds >= r.verify_seconds
     assert os.path.exists(os.path.join(agent.transmitted_dir, "file_normal.csv"))
 
 
@@ -235,3 +237,116 @@ def test_vault_rejects_missing_file_id(tmp_path):
     vault = HashVault(str(tmp_path / "vault" / "hash_vault.json"))
     with pytest.raises(VaultIntegrityError):
         vault.retrieve("nonexistent")
+
+
+def test_vault_publishes_metadata_and_chain_as_one_atomic_bundle(tmp_path):
+    vault = HashVault(str(tmp_path / "vault" / "hash_vault.json"))
+    vault.store("atomic_entry", "root", "sha256", 2, header_hash="header",
+                record_hashes=["r1", "r2"], trans_ids=["t1", "t2"], file_hash="file")
+
+    entry = tmp_path / "vault" / "entries" / "atomic_entry.json"
+    assert entry.exists()
+    assert oct(entry.stat().st_mode & 0o777) == "0o600"
+    assert vault.retrieve("atomic_entry").file_hash == "file"
+    assert vault.retrieve_chain("atomic_entry").trans_ids == ["t1", "t2"]
+
+
+def test_vault_interrupted_publish_leaves_no_partial_entry(tmp_path, monkeypatch):
+    vault = HashVault(str(tmp_path / "vault" / "hash_vault.json"))
+
+    def interrupted_link(_source, _destination):
+        raise OSError("simulated interruption")
+
+    monkeypatch.setattr("hash_vault.os.link", interrupted_link)
+    with pytest.raises(OSError):
+        vault.store("interrupted", "root", "sha256", 1,
+                    record_hashes=["r1"], trans_ids=["t1"], file_hash="file")
+
+    assert not (tmp_path / "vault" / "entries" / "interrupted.json").exists()
+    assert list((tmp_path / "vault" / "entries").glob(".vault-tmp-*")) == []
+
+
+@pytest.mark.parametrize("unsafe_id", ["../escape", "/absolute", "space id", "", "한글"])
+def test_vault_rejects_unsafe_file_id(tmp_path, unsafe_id):
+    vault = HashVault(str(tmp_path / "vault" / "hash_vault.json"))
+    with pytest.raises(VaultIntegrityError):
+        vault.store(unsafe_id, "root", "sha256", 1)
+
+
+def test_missing_source_fails_closed_without_transmission(env):
+    _vault, _batch, agent = env
+    missing = os.path.join(agent.transmitted_dir, "does_not_exist.csv")
+    r = agent.transmit("missing_source", missing)
+
+    assert r.status == "BLOCKED"
+    assert r.reason_code == ReasonCode.SNAPSHOT_CREATION_FAILED.value
+    assert not os.path.exists(os.path.join(agent.transmitted_dir, "does_not_exist.csv"))
+
+
+def test_missing_vault_entry_fails_closed_and_quarantines_snapshot(env, tmp_path):
+    _vault, _batch, agent = env
+    source = tmp_path / "unregistered.csv"
+    source.write_text("trans_id,amount\nTX1,100\n", encoding="utf-8")
+    r = agent.transmit("unregistered", str(source))
+
+    assert r.status == "BLOCKED"
+    assert r.reason_code == ReasonCode.VAULT_LOOKUP_FAILED.value
+    assert not os.path.exists(os.path.join(agent.transmitted_dir, source.name))
+    assert os.path.exists(os.path.join(agent.quarantine_dir, source.name))
+
+
+def test_unexpected_verification_error_fails_closed(env, monkeypatch):
+    _vault, batch, agent = env
+    b = batch.run("verification_error", RECORD_COUNT, seed=81)
+
+    def broken_builder(_path, _file_id):
+        raise RuntimeError("simulated parser failure")
+
+    monkeypatch.setattr(transfer_agent_module, "build_chain", broken_builder)
+    r = agent.transmit(b.file_id, b.file_path)
+
+    assert r.status == "BLOCKED"
+    assert r.reason_code == ReasonCode.VERIFICATION_ERROR.value
+    assert not os.path.exists(os.path.join(agent.transmitted_dir, "verification_error.csv"))
+
+
+def test_existing_destination_is_never_overwritten(env):
+    _vault, batch, agent = env
+    b = batch.run("destination_conflict", RECORD_COUNT, seed=82)
+    os.makedirs(agent.transmitted_dir, exist_ok=True)
+    destination = os.path.join(agent.transmitted_dir, "destination_conflict.csv")
+    with open(destination, "wb") as stream:
+        stream.write(b"PREEXISTING")
+
+    r = agent.transmit(b.file_id, b.file_path)
+
+    assert r.status == "BLOCKED"
+    assert r.reason_code == ReasonCode.DESTINATION_CONFLICT.value
+    with open(destination, "rb") as stream:
+        assert stream.read() == b"PREEXISTING"
+
+
+def test_mismatch_exposes_machine_readable_reason_code(env):
+    _vault, batch, agent = env
+    b = batch.run("reason_code", RECORD_COUNT, seed=83)
+    tamper_file(b.file_path, tamper_count=1, mode="amount", seed=84)
+    r = agent.transmit(b.file_id, b.file_path)
+
+    assert r.status == "BLOCKED"
+    assert r.reason_code == ReasonCode.FILE_AND_CHAIN_MISMATCH.value
+
+
+def test_quarantine_io_error_still_returns_blocked(env, monkeypatch):
+    _vault, batch, agent = env
+    b = batch.run("quarantine_error", RECORD_COUNT, seed=85)
+    tamper_file(b.file_path, tamper_count=1, mode="amount", seed=86)
+
+    def broken_quarantine(_snapshot, _file_id, _file_path):
+        raise OSError("simulated quarantine failure")
+
+    monkeypatch.setattr(agent, "_quarantine", broken_quarantine)
+    r = agent.transmit(b.file_id, b.file_path)
+
+    assert r.status == "BLOCKED"
+    assert r.reason_code == ReasonCode.FILE_AND_CHAIN_MISMATCH.value
+    assert not os.path.exists(os.path.join(agent.transmitted_dir, "quarantine_error.csv"))

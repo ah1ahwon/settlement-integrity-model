@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "run_id": "v2_20260918_atomic_failclosed_100k",
+  "started_at": "2026-09-18T12:07:26.133797+00:00",
+  "finished_at": "2026-09-18T12:16:21.431984+00:00",
+  "elapsed_seconds": 537.3066285839304,
+  "git_commit": "262280be68ed56d10288db26ace52747bfd4faa7",
+  "git_worktree_dirty": true,
+  "source_bundle_sha256": "8c3193099bc8e1e05b940292e1e01199a05dd611b180595d77723ae4e2b75234",
+  "requirements_sha256": "f13c44154cd2cec1abb19e1597b89924cb56ae61bbef09d224c4f25686099ee1",
+  "python": "3.11.1 (v3.11.1:a7a450f84a, Dec  6 2022, 15:24:06) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "arguments": {
+    "case": "all",
+    "records": 100000,
+    "trials": 5,
+    "tamper_count": 1,
+    "tamper_mode": "amount",
+    "latency_sizes": [
+      1000,
+      10000,
+      50000,
+      100000
+    ],
+    "latency_repeats": 5,
+    "sweep_counts": [
+      1,
+      5,
+      10,
+      50,
+      100
+    ],
+    "sweep_trials": 5,
+    "run_id": "v2_20260918_atomic_failclosed_100k"
+  },
+  "result_directory": "/Users/jeong-awon/Desktop/정아원/SKKU/논문/settlement-integrity-model/results/runs/v2_20260918_atomic_failclosed_100k",
+  "data_directory": "/Users/jeong-awon/Desktop/정아원/SKKU/논문/settlement-integrity-model/data/runs/v2_20260918_atomic_failclosed_100k"
+}

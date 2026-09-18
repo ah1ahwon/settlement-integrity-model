@@ -1,8 +1,11 @@
 __pycache__/
 *.pyc
+.DS_Store
 .venv/
 venv/
 data/*
 results/*
 !data/.gitkeep
 !results/.gitkeep
+!results/runs/
+!results/runs/**

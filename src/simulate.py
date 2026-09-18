@@ -1,19 +1,18 @@
-"""이중 해시 체이닝 기반 정산 파일 무결성 검증 모델 - 시뮬레이션 오케스트레이터.
-
-- Case A (정상 시나리오): 생성 -> 해시 저장 -> 전송 직전 검증 -> 정상 전송
-- Case B (변조 공격 시나리오): 생성 -> 해시 저장 -> (파일 변조) -> 전송 직전 검증 -> 차단
-- Latency Sweep: 데이터 규모별 해시 계산/검증 오버헤드 측정 (베이스라인 대비)
-
-결과는 results/ 아래 CSV 및 report.md, latency_overhead.png 로 저장된다.
-"""
+"""정산 파일 무결성 검증 모델의 재현 가능한 버전별 실험 오케스트레이터."""
 
 from __future__ import annotations
 
 import argparse
 import csv
+import json
 import os
+import platform
+import re
+import subprocess
 import sys
+import time
 import uuid
+from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -32,375 +31,316 @@ def _new_file_id(prefix: str) -> str:
 
 
 def run_case_a(batch: SettlementBatch, agent: TransferAgent, trials: int, record_count: int):
-    results = []
+    rows = []
     for i in range(trials):
         file_id = _new_file_id("caseA")
         b = batch.run(file_id, record_count, seed=1000 + i)
         r = agent.transmit(file_id, b.file_path)
-        results.append((b, r))
-        print(f"  [Case A] trial {i + 1}/{trials} file_id={file_id} -> {r.status}")
-    return results
+        rows.append((b, r))
+        print(f"  [Case A] {i + 1}/{trials} {file_id} -> {r.status}/{r.reason_code}")
+    return rows
 
 
 def run_case_b(batch: SettlementBatch, agent: TransferAgent, trials: int, record_count: int,
-                tamper_count: int, tamper_mode: str):
-    results = []
+               tamper_count: int, tamper_mode: str):
+    rows = []
     for i in range(trials):
         file_id = _new_file_id("caseB")
         b = batch.run(file_id, record_count, seed=2000 + i)
         report = tamper_file(b.file_path, tamper_count=tamper_count, mode=tamper_mode, seed=3000 + i)
         r = agent.transmit(file_id, b.file_path)
-        results.append((b, r, report))
-        print(f"  [Case B] trial {i + 1}/{trials} file_id={file_id} tampered={report.tampered_rows} -> {r.status}")
-    return results
+        rows.append((b, r, report))
+        print(f"  [Case B] {i + 1}/{trials} {file_id} -> {r.status}/{r.reason_code}")
+    return rows
 
 
 def run_tamper_count_sweep(batch: SettlementBatch, agent: TransferAgent, record_count: int,
-                            tamper_counts: list[int], mode: str, trials_per_count: int):
-    """변조 건수를 1건에서 다건으로 늘려가며, 탐지율과 위치 특정 정확도가
-    변조 규모와 무관하게 항상 100%를 유지하는지 반복 검증한다."""
+                           tamper_counts: list[int], mode: str, trials_per_count: int):
     rows = []
     for count in tamper_counts:
-        detected = 0
-        localized_exact = 0
+        if count > record_count:
+            raise ValueError(f"tamper_count({count})는 record_count({record_count})보다 클 수 없습니다.")
+        detected = localized_exact = 0
         for i in range(trials_per_count):
             file_id = _new_file_id(f"sweep{count}")
             b = batch.run(file_id, record_count, seed=8000 + i)
             report = tamper_file(b.file_path, tamper_count=count, mode=mode, seed=9000 + i)
             r = agent.transmit(file_id, b.file_path)
-            if r.status == "BLOCKED":
-                detected += 1
-            if set(r.tampered_trans_ids) == set(report.tampered_rows):
-                localized_exact += 1
-
-        detection_rate = detected / trials_per_count
-        localization_rate = localized_exact / trials_per_count
-        rows.append({
-            "tamper_count": count,
-            "record_count": record_count,
-            "trials": trials_per_count,
-            "detection_rate": detection_rate,
-            "localization_accuracy": localization_rate,
-        })
-        print(f"  [Tamper Sweep] tamper_count={count:>4}/{record_count:,} mode={mode} "
-              f"detection={detected}/{trials_per_count} ({detection_rate*100:.0f}%) "
-              f"localization={localized_exact}/{trials_per_count} ({localization_rate*100:.0f}%)")
+            detected += r.status == "BLOCKED"
+            localized_exact += set(r.tampered_trans_ids) == set(report.tampered_rows)
+        rows.append({"tamper_count": count, "record_count": record_count,
+                     "trials": trials_per_count, "detection_rate": detected / trials_per_count,
+                     "localization_accuracy": localized_exact / trials_per_count})
+        print(f"  [Tamper Sweep] count={count} detection={detected}/{trials_per_count} "
+              f"localization={localized_exact}/{trials_per_count}")
     return rows
 
 
-def run_naive_baseline_comparison(batch: SettlementBatch, trials: int, record_count: int):
-    """RQ4: 제안 모델과 기존의 단순 파일 속성(크기·수정시각) 비교 방식을 대조한다.
-
-    각 변조 모드에 대해 두 가지 공격자를 가정한다.
-      - as-is: 변조 후 파일의 수정시각을 그대로 둔 공격자
-      - mtime 위조: 변조 후 os.utime()으로 수정시각을 원본과 동일하게 되돌리는,
-        기초적인 안티포렌식 지식을 가진 공격자
-    제안 모델(해시 체이닝)은 내용 기반이므로 두 경우 모두 별도 Case B 실험에서
-    이미 100% 탐지가 검증되었다. 여기서는 '기존 방식'이 두 경우 각각 얼마나
-    놓치는지를 측정한다.
-    """
+def run_naive_baseline_comparison(batch: SettlementBatch, agent: TransferAgent,
+                                  trials: int, record_count: int):
+    """RQ4: 동일한 mtime 위조 공격에서 기존 방식과 제안 모델을 모두 직접 실행한다."""
     modes = ["amount", "account", "delete", "bitflip"]
     rows = []
     for mode in modes:
-        caught_asis = 0
-        caught_forged = 0
+        caught_asis = caught_forged = proposed_blocked = 0
+        reason_counts: dict[str, int] = {}
         for i in range(trials):
-            file_id = _new_file_id(f"naive_{mode}")
+            file_id = _new_file_id(f"rq4_{mode}")
             b = batch.run(file_id, record_count, seed=6000 + i)
             before = snapshot(b.file_path)
-
             tamper_file(b.file_path, tamper_count=1, mode=mode, seed=7000 + i)
-
-            if not naive_check(before, b.file_path):
-                caught_asis += 1
-
+            caught_asis += not naive_check(before, b.file_path)
             os.utime(b.file_path, (before.mtime, before.mtime))
-            if not naive_check(before, b.file_path):
-                caught_forged += 1
+            caught_forged += not naive_check(before, b.file_path)
 
-        rate_asis = caught_asis / trials
-        rate_forged = caught_forged / trials
-        rows.append({
-            "mode": mode,
-            "trials": trials,
-            "naive_detection_rate_asis": rate_asis,
-            "naive_detection_rate_mtime_forged": rate_forged,
-        })
-        print(f"  [Naive Baseline] mode={mode:8s} as-is={caught_asis}/{trials} ({rate_asis*100:.0f}%)  "
-              f"mtime위조={caught_forged}/{trials} ({rate_forged*100:.0f}%)")
+            proposed = agent.transmit(file_id, b.file_path)
+            proposed_blocked += proposed.status == "BLOCKED"
+            reason_counts[proposed.reason_code] = reason_counts.get(proposed.reason_code, 0) + 1
+
+        row = {
+            "mode": mode, "trials": trials,
+            "naive_detection_rate_asis": caught_asis / trials,
+            "naive_detection_rate_mtime_forged": caught_forged / trials,
+            "proposed_detection_rate_mtime_forged": proposed_blocked / trials,
+            "proposed_reason_codes": reason_counts,
+        }
+        rows.append(row)
+        print(f"  [RQ4] {mode:8s} naive(as-is)={caught_asis}/{trials}, "
+              f"naive(mtime)={caught_forged}/{trials}, proposed(mtime)={proposed_blocked}/{trials}")
     return rows
 
 
-def run_latency_sweep(vault: HashVault, sizes: list[int]):
+def run_latency_sweep(batch: SettlementBatch, agent: TransferAgent, sizes: list[int], repeats: int):
     summaries = []
     network_estimates: dict[int, dict[str, float]] = {}
     for size in sizes:
-        staging = os.path.join(config.STAGING_DIR, "latency")
-        batch = SettlementBatch(vault, staging)
-        agent = TransferAgent(vault, config.TRANSMITTED_DIR, config.QUARANTINE_DIR)
-
-        hash_secs, verify_secs, baseline_secs, file_sizes = [], [], [], []
-        repeats = 9
+        phase1, phase3, proposed_total, baseline, file_sizes = [], [], [], [], []
         for i in range(repeats):
             file_id = _new_file_id(f"lat{size}")
             b = batch.run(file_id, size, seed=4000 + i)
             file_sizes.append(os.path.getsize(b.file_path))
             r = agent.transmit(file_id, b.file_path)
-            hash_secs.append(b.hashing_seconds)
-            verify_secs.append(r.verify_seconds)
+            phase1.append(b.integrity_seconds)
+            phase3.append(r.phase3_gate_seconds)
+            proposed_total.append(b.integrity_seconds + r.total_seconds)
 
-            # 베이스라인: 동일 크기 파일을 검증 없이 재생성하여 단순 전송만 수행
-            base_file_id = _new_file_id(f"latbase{size}")
-            b2 = batch.run(base_file_id, size, seed=5000 + i)
-            baseline_secs.append(agent.transmit_without_verification(b2.file_path))
-            # 베이스라인 파일도 vault에 등록되지만 통계 목적일 뿐 검증에는 사용하지 않음
+            baseline_id = _new_file_id(f"latbase{size}")
+            b2 = batch.run(baseline_id, size, seed=5000 + i)
+            baseline.append(agent.transmit_without_verification(b2.file_path))
 
-        summary = latency_overhead(size, hash_secs, verify_secs, baseline_secs)
+        summary = latency_overhead(size, phase1, phase3, proposed_total, baseline)
         summaries.append(summary)
-
-        # 네트워크 전송 구간(측정이 아닌 대역폭 기반 추정치)을 함께 계산해,
-        # 해시 검증 오버헤드가 종단간 지연에서 차지하는 비중을 가늠한다.
         median_size = sorted(file_sizes)[len(file_sizes) // 2]
         network_estimates[size] = {
-            key: estimate_transfer_seconds(median_size, profile)
-            for key, profile in PROFILES.items()
+            key: estimate_transfer_seconds(median_size, profile) for key, profile in PROFILES.items()
         }
-
-        net_desc = ", ".join(
-            f"{PROFILES[k].name}={v*1000:.1f}ms" for k, v in network_estimates[size].items()
-        )
-        print(f"  [Latency] n={size:>7,} hash={summary.avg_hash_seconds*1000:.2f}ms "
-              f"verify={summary.avg_verify_seconds*1000:.2f}ms "
-              f"baseline={summary.avg_baseline_seconds*1000:.2f}ms "
-              f"overhead={summary.overhead_seconds*1000:.2f}ms ({summary.overhead_ratio*100:.1f}%) "
-              f"| 네트워크 전송 추정: {net_desc}")
+        print(f"  [Latency] n={size:,} phase1={summary.phase1_integrity_seconds*1000:.2f}ms "
+              f"phase3_gate={summary.phase3_gate_seconds*1000:.2f}ms "
+              f"proposed_total={summary.proposed_total_seconds*1000:.2f}ms "
+              f"baseline={summary.baseline_transfer_seconds*1000:.2f}ms")
     return summaries, network_estimates
 
 
-def _write_sweep_csv(path: str, rows: list[dict]):
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["tamper_count", "record_count", "trials", "detection_rate_pct", "localization_accuracy_pct"])
-        for row in rows:
-            w.writerow([row["tamper_count"], row["record_count"], row["trials"],
-                        round(row["detection_rate"] * 100, 1), round(row["localization_accuracy"] * 100, 1)])
-
-
-def _write_naive_csv(path: str, rows: list[dict]):
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["mode", "trials", "naive_detection_rate_asis", "naive_detection_rate_mtime_forged"])
-        for row in rows:
-            w.writerow([row["mode"], row["trials"],
-                        round(row["naive_detection_rate_asis"] * 100, 1),
-                        round(row["naive_detection_rate_mtime_forged"] * 100, 1)])
-
-
-def _write_case_csv(path: str, rows: list[tuple]):
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["file_id", "record_count", "status", "verified",
-                    "hashing_ms", "verify_ms", "original_file_hash", "recomputed_file_hash",
-                    "original_chain_hash", "recomputed_chain_hash",
-                    "tampered_rows_ground_truth", "tampered_rows_localized"])
+def _write_case_csv(path: str, rows: list[tuple]) -> None:
+    with open(path, "w", newline="", encoding="utf-8") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(["file_id", "record_count", "status", "reason_code", "verified",
+                         "hashing_ms", "vault_store_ms", "phase1_integrity_ms",
+                         "snapshot_ms", "verify_ms", "phase3_gate_ms", "promotion_ms", "agent_total_ms",
+                         "original_file_hash", "recomputed_file_hash", "original_chain_hash",
+                         "recomputed_chain_hash", "tampered_rows_ground_truth", "tampered_rows_localized"])
         for row in rows:
             if len(row) == 3:
                 b, r, report = row
-                ground_truth = ";".join(report.tampered_rows)
+                truth = ";".join(report.tampered_rows)
                 localized = ";".join(r.tampered_trans_ids)
             else:
                 b, r = row
-                ground_truth = ""
-                localized = ""
-            w.writerow([b.file_id, b.record_count, r.status, r.verified,
-                        round(b.hashing_seconds * 1000, 3), round(r.verify_seconds * 1000, 3),
-                        r.original_file_hash, r.recomputed_file_hash,
-                        r.original_hash, r.recomputed_hash,
-                        ground_truth, localized])
+                truth = localized = ""
+            writer.writerow([b.file_id, b.record_count, r.status, r.reason_code, r.verified,
+                             round(b.hashing_seconds * 1000, 3), round(b.vault_store_seconds * 1000, 3),
+                             round(b.integrity_seconds * 1000, 3), round(r.snapshot_seconds * 1000, 3),
+                             round(r.verify_seconds * 1000, 3), round(r.phase3_gate_seconds * 1000, 3),
+                             round(r.promotion_seconds * 1000, 3), round(r.total_seconds * 1000, 3),
+                             r.original_file_hash, r.recomputed_file_hash, r.original_hash,
+                             r.recomputed_hash, truth, localized])
 
 
-def _write_latency_csv(path: str, summaries, network_estimates: dict[int, dict[str, float]]):
-    profile_keys = list(PROFILES.keys())
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["record_count", "avg_hash_ms", "avg_verify_ms", "avg_baseline_ms",
-                    "overhead_ms", "overhead_ratio_pct"]
-                   + [f"net_{k}_ms" for k in profile_keys])
-        for s in summaries:
-            net_row = [round(network_estimates[s.record_count][k] * 1000, 2) for k in profile_keys]
-            w.writerow([s.record_count, round(s.avg_hash_seconds * 1000, 3),
-                        round(s.avg_verify_seconds * 1000, 3), round(s.avg_baseline_seconds * 1000, 3),
-                        round(s.overhead_seconds * 1000, 3), round(s.overhead_ratio * 100, 2)]
-                       + net_row)
+def _write_sweep_csv(path: str, rows: list[dict]) -> None:
+    with open(path, "w", newline="", encoding="utf-8") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(["tamper_count", "record_count", "trials", "detection_rate_pct",
+                         "localization_accuracy_pct"])
+        for row in rows:
+            writer.writerow([row["tamper_count"], row["record_count"], row["trials"],
+                             round(row["detection_rate"] * 100, 1),
+                             round(row["localization_accuracy"] * 100, 1)])
 
 
-def _plot_latency(summaries, path: str):
+def _write_rq4_csv(path: str, rows: list[dict]) -> None:
+    with open(path, "w", newline="", encoding="utf-8") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(["mode", "trials", "naive_detection_rate_asis_pct",
+                         "naive_detection_rate_mtime_forged_pct",
+                         "proposed_detection_rate_mtime_forged_pct", "proposed_reason_codes"])
+        for row in rows:
+            writer.writerow([row["mode"], row["trials"],
+                             round(row["naive_detection_rate_asis"] * 100, 1),
+                             round(row["naive_detection_rate_mtime_forged"] * 100, 1),
+                             round(row["proposed_detection_rate_mtime_forged"] * 100, 1),
+                             json.dumps(row["proposed_reason_codes"], ensure_ascii=False, sort_keys=True)])
+
+
+def _write_latency_csv(path: str, summaries, network_estimates: dict[int, dict[str, float]]) -> None:
+    profile_keys = list(PROFILES)
+    with open(path, "w", newline="", encoding="utf-8") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(["record_count", "phase1_integrity_ms", "phase3_gate_ms", "proposed_total_ms",
+                         "baseline_transfer_ms", "overhead_ms", "overhead_ratio_pct"]
+                        + [f"net_{key}_ms" for key in profile_keys])
+        for summary in summaries:
+            writer.writerow([summary.record_count, round(summary.phase1_integrity_seconds * 1000, 3),
+                             round(summary.phase3_gate_seconds * 1000, 3),
+                             round(summary.proposed_total_seconds * 1000, 3),
+                             round(summary.baseline_transfer_seconds * 1000, 3),
+                             round(summary.overhead_seconds * 1000, 3),
+                             round(summary.overhead_ratio * 100, 2)]
+                            + [round(network_estimates[summary.record_count][key] * 1000, 2)
+                               for key in profile_keys])
+
+
+def _plot_latency(summaries, path: str) -> None:
     try:
         import matplotlib
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except ImportError:
-        print("  matplotlib이 설치되어 있지 않아 그래프 생성을 건너뜁니다.")
+        print("  matplotlib이 없어 그래프 생성을 건너뜁니다.")
         return
-
     for font_name in ("AppleGothic", "Malgun Gothic", "Nanum Gothic", "Noto Sans CJK KR"):
-        if font_name in {f.name for f in matplotlib.font_manager.fontManager.ttflist}:
+        if font_name in {font.name for font in matplotlib.font_manager.fontManager.ttflist}:
             matplotlib.rcParams["font.family"] = font_name
             break
     matplotlib.rcParams["axes.unicode_minus"] = False
-
-    sizes = [s.record_count for s in summaries]
-    overhead_ms = [s.overhead_seconds * 1000 for s in summaries]
-    baseline_ms = [s.avg_baseline_seconds * 1000 for s in summaries]
-
+    sizes = [summary.record_count for summary in summaries]
     fig, ax = plt.subplots(figsize=(7, 4.5))
-    ax.plot(sizes, baseline_ms, marker="o", label="베이스라인 전송(검증 없음)")
-    ax.plot(sizes, overhead_ms, marker="o", label="해시 계산+검증 오버헤드")
+    ax.plot(sizes, [s.baseline_transfer_seconds * 1000 for s in summaries], marker="o",
+            label="베이스라인 전송")
+    ax.plot(sizes, [s.proposed_total_seconds * 1000 for s in summaries], marker="o",
+            label="제안 모델 전체")
     ax.set_xlabel("레코드 수")
     ax.set_ylabel("소요 시간 (ms)")
-    ax.set_title("데이터 규모별 처리 지연 시간")
+    ax.set_title("동일 측정 경계의 데이터 규모별 처리 지연")
     ax.legend()
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
 
 
-def main():
+def _git_commit() -> str:
+    try:
+        return subprocess.run(["git", "rev-parse", "HEAD"], cwd=config.BASE_DIR,
+                              check=True, capture_output=True, text=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(description="정산 파일 무결성 검증 모델 시뮬레이션")
     parser.add_argument("--case", choices=["a", "b", "latency", "naive", "sweep", "all"], default="all")
     parser.add_argument("--records", type=int, default=config.DEFAULT_RECORD_COUNT)
     parser.add_argument("--trials", type=int, default=5)
     parser.add_argument("--tamper-count", type=int, default=1)
-    parser.add_argument("--tamper-mode",
-                        choices=["amount", "account", "both", "header", "delete", "insert", "bitflip"],
-                        default="amount")
+    parser.add_argument("--tamper-mode", choices=["amount", "account", "both", "header", "delete", "insert", "bitflip"], default="amount")
     parser.add_argument("--latency-sizes", type=int, nargs="+", default=[1_000, 10_000, 50_000, 100_000])
+    parser.add_argument("--latency-repeats", type=int, default=5)
     parser.add_argument("--sweep-counts", type=int, nargs="+", default=[1, 5, 10, 50, 100])
     parser.add_argument("--sweep-trials", type=int, default=5)
+    parser.add_argument("--run-id", help="results/runs 아래에 생성할 고유 실행 ID")
     args = parser.parse_args()
+    if min(args.records, args.trials, args.latency_repeats, args.sweep_trials) <= 0:
+        parser.error("레코드 수와 반복 횟수는 1 이상이어야 합니다.")
 
-    config.ensure_dirs()
-    vault = HashVault(config.VAULT_PATH)
-    batch = SettlementBatch(vault, config.STAGING_DIR)
-    agent = TransferAgent(vault, config.TRANSMITTED_DIR, config.QUARANTINE_DIR)
+    run_id = args.run_id or datetime.now().strftime("%Y%m%d_%H%M%S")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", run_id):
+        parser.error("run-id는 영문·숫자로 시작하고 영문·숫자·점·밑줄·하이픈만 허용합니다.")
+    result_dir = os.path.join(config.RESULTS_DIR, "runs", run_id)
+    data_dir = os.path.join(config.DATA_DIR, "runs", run_id)
+    try:
+        os.makedirs(result_dir, exist_ok=False)
+        os.makedirs(data_dir, exist_ok=False)
+    except FileExistsError:
+        parser.error(f"기존 결과 보호를 위해 이미 존재하는 run-id는 사용할 수 없습니다: {run_id}")
 
-    report_lines = ["# 시뮬레이션 결과 리포트", ""]
+    staging = os.path.join(data_dir, "staging")
+    transmitted = os.path.join(data_dir, "transmitted")
+    quarantine = os.path.join(data_dir, "quarantine")
+    vault = HashVault(os.path.join(data_dir, "hash_vault", "hash_vault.json"))
+    batch = SettlementBatch(vault, staging)
+    agent = TransferAgent(vault, transmitted, quarantine)
+    started_at = datetime.now(timezone.utc)
+    monotonic_started = time.perf_counter()
+    report = ["# 시뮬레이션 결과 리포트", "", f"- 실행 ID: `{run_id}`",
+              f"- Git commit: `{_git_commit()}`", "- 기존 결과를 덮어쓰지 않은 신규 버전 실행", ""]
 
     if args.case in ("a", "all"):
-        print(f"Case A (정상 시나리오) 실행: trials={args.trials}, records={args.records:,}")
-        results_a = run_case_a(batch, agent, args.trials, args.records)
-        _write_case_csv(os.path.join(config.RESULTS_DIR, "case_a_results.csv"), results_a)
-        fpr = false_positive_rate([r for _, r in results_a])
-        report_lines += [
-            "## Case A: 정상 시나리오",
-            f"- 시행 횟수: {args.trials}",
-            f"- 레코드 수: {args.records:,}",
-            f"- 오탐(정상 파일 오차단)율: {fpr * 100:.2f}%",
-            "",
-        ]
+        rows_a = run_case_a(batch, agent, args.trials, args.records)
+        _write_case_csv(os.path.join(result_dir, "case_a_results.csv"), rows_a)
+        report += ["## Case A: 정상 시나리오", f"- 오탐률: {false_positive_rate([r for _, r in rows_a])*100:.2f}%", ""]
 
     if args.case in ("b", "all"):
-        print(f"Case B (변조 시나리오) 실행: trials={args.trials}, records={args.records:,}, "
-              f"tamper_count={args.tamper_count}, mode={args.tamper_mode}")
-        results_b = run_case_b(batch, agent, args.trials, args.records, args.tamper_count, args.tamper_mode)
-        _write_case_csv(os.path.join(config.RESULTS_DIR, "case_b_results.csv"), results_b)
-        tdr = tampering_detection_rate([r for _, r, _ in results_b])
-        loc_acc = localization_accuracy(
-            [(r.tampered_trans_ids, report.tampered_rows) for _, r, report in results_b]
-        )
-        report_lines += [
-            "## Case B: 변조 공격 시나리오",
-            f"- 시행 횟수: {args.trials}",
-            f"- 레코드 수: {args.records:,}",
-            f"- 변조 건수(살라미 기법): {args.tamper_count} / {args.records:,}",
-            f"- 변조 방식: {args.tamper_mode}",
-            f"- 변조 탐지율(Tampering Detection Rate): {tdr * 100:.2f}%",
-            f"- 변조 위치 특정 정확도(Localization Accuracy): {loc_acc * 100:.2f}% "
-            f"(체인 원장 대조로 실제 변조된 trans_id를 정확히 특정한 비율)",
-            "",
-        ]
+        rows_b = run_case_b(batch, agent, args.trials, args.records, args.tamper_count, args.tamper_mode)
+        _write_case_csv(os.path.join(result_dir, "case_b_results.csv"), rows_b)
+        tdr = tampering_detection_rate([r for _, r, _ in rows_b])
+        loc = localization_accuracy([(r.tampered_trans_ids, t.tampered_rows) for _, r, t in rows_b])
+        report += ["## Case B: 변조 공격", f"- 탐지율: {tdr*100:.2f}%",
+                   f"- 위치 특정 정확도: {loc*100:.2f}%", ""]
 
     if args.case in ("sweep", "all"):
-        print(f"변조 건수 스윕 실행: counts={args.sweep_counts}, records={args.records:,}, "
-              f"trials={args.sweep_trials}")
-        sweep_rows = run_tamper_count_sweep(batch, agent, args.records, args.sweep_counts,
-                                             args.tamper_mode, args.sweep_trials)
-        _write_sweep_csv(os.path.join(config.RESULTS_DIR, "tamper_count_sweep.csv"), sweep_rows)
-        report_lines += [
-            "## 변조 건수 스윕 (탐지율·위치 특정 정확도가 변조 규모와 무관한지 검증)",
-            "",
-            f"- 변조 방식: {args.tamper_mode}",
-            f"- 레코드 수: {args.records:,}",
-            f"- 시행 횟수(건수별): {args.sweep_trials}",
-            "",
-            "| 변조 건수 | 탐지율 | 위치 특정 정확도 |",
-            "|---|---|---|",
-        ]
-        for row in sweep_rows:
-            report_lines.append(
-                f"| {row['tamper_count']:,} | {row['detection_rate']*100:.0f}% | "
-                f"{row['localization_accuracy']*100:.0f}% |"
-            )
-        report_lines.append("")
+        sweep = run_tamper_count_sweep(batch, agent, args.records, args.sweep_counts,
+                                       args.tamper_mode, args.sweep_trials)
+        _write_sweep_csv(os.path.join(result_dir, "tamper_count_sweep.csv"), sweep)
+        report += ["## 공격 규모·경계조건 스윕", "", "| 변조 건수 | 탐지율 | 위치 특정 정확도 |",
+                   "|---:|---:|---:|"]
+        report += [f"| {row['tamper_count']} | {row['detection_rate']*100:.0f}% | {row['localization_accuracy']*100:.0f}% |" for row in sweep]
+        report.append("")
 
     if args.case in ("naive", "all"):
-        print(f"Naive Baseline 비교 실행: trials={args.trials}, records={args.records:,}")
-        naive_rows = run_naive_baseline_comparison(batch, args.trials, args.records)
-        _write_naive_csv(os.path.join(config.RESULTS_DIR, "naive_baseline_results.csv"), naive_rows)
-        report_lines += [
-            "## RQ4: 제안 모델 vs 파일 크기·수정시각 비교 방식(기존 단순 방식)",
-            "",
-            f"- 시행 횟수(모드별): {args.trials}",
-            f"- 레코드 수: {args.records:,}",
-            "- 제안 모델(해시 체이닝)의 탐지율은 Case B 실험에서 이미 100%로 확인됨 "
-            "(내용 기반 검증이라 mtime 위조와 무관)",
-            "",
-            "| 변조 방식 | 기존 방식 탐지율(as-is) | 기존 방식 탐지율(mtime 위조 후) |",
-            "|---|---|---|",
-        ]
-        for row in naive_rows:
-            report_lines.append(
-                f"| {row['mode']} | {row['naive_detection_rate_asis']*100:.0f}% | "
-                f"{row['naive_detection_rate_mtime_forged']*100:.0f}% |"
-            )
-        report_lines.append("")
+        rq4 = run_naive_baseline_comparison(batch, agent, args.trials, args.records)
+        _write_rq4_csv(os.path.join(result_dir, "rq4_comparison.csv"), rq4)
+        report += ["## RQ4: 기존 방식과 제안 모델 직접 실행 비교", "",
+                   "| 공격 | 기존(as-is) | 기존(mtime 위조) | 제안 모델(mtime 위조) |",
+                   "|---|---:|---:|---:|"]
+        report += [f"| {row['mode']} | {row['naive_detection_rate_asis']*100:.0f}% | "
+                   f"{row['naive_detection_rate_mtime_forged']*100:.0f}% | "
+                   f"{row['proposed_detection_rate_mtime_forged']*100:.0f}% |" for row in rq4]
+        report.append("")
 
     if args.case in ("latency", "all"):
-        print(f"Latency Sweep 실행: sizes={args.latency_sizes}")
-        summaries, network_estimates = run_latency_sweep(vault, args.latency_sizes)
-        _write_latency_csv(os.path.join(config.RESULTS_DIR, "latency_sweep.csv"), summaries, network_estimates)
-        _plot_latency(summaries, os.path.join(config.RESULTS_DIR, "latency_overhead.png"))
-        report_lines += ["## 처리 지연 시간 (Processing Latency Overhead)", ""]
-        report_lines += ["| 레코드 수 | 해시계산(ms) | 검증(ms) | 베이스라인(ms) | 오버헤드(ms) | 오버헤드(%) |",
-                          "|---|---|---|---|---|---|"]
-        for s in summaries:
-            report_lines.append(
-                f"| {s.record_count:,} | {s.avg_hash_seconds*1000:.2f} | {s.avg_verify_seconds*1000:.2f} | "
-                f"{s.avg_baseline_seconds*1000:.2f} | {s.overhead_seconds*1000:.2f} | {s.overhead_ratio*100:.1f}% |"
-            )
-        report_lines.append("")
+        summaries, network = run_latency_sweep(batch, agent, args.latency_sizes, args.latency_repeats)
+        _write_latency_csv(os.path.join(result_dir, "latency_sweep.csv"), summaries, network)
+        _plot_latency(summaries, os.path.join(result_dir, "latency_overhead.png"))
+        report += ["## 수정된 성능 측정 구간", "",
+                   "Phase 1은 해시 계산+원자적 Vault 저장, Phase 3은 스냅샷 생성부터 허용 결정까지 포함한다.", "",
+                   "| 레코드 | Phase 1(ms) | Phase 3 gate(ms) | 제안 전체(ms) | 베이스라인(ms) |",
+                   "|---:|---:|---:|---:|---:|"]
+        report += [f"| {s.record_count:,} | {s.phase1_integrity_seconds*1000:.2f} | "
+                   f"{s.phase3_gate_seconds*1000:.2f} | {s.proposed_total_seconds*1000:.2f} | "
+                   f"{s.baseline_transfer_seconds*1000:.2f} |" for s in summaries]
+        report.append("")
 
-        report_lines += [
-            "### 네트워크 전송 구간을 포함한 종단간(end-to-end) 지연 추정",
-            "",
-            "아래 값은 실측이 아니라 회선 대역폭 가정에 기반한 분석적 추정치이다 "
-            "(§5.2 한계: 로컬 I/O만 측정, 실제 네트워크 전송 구간은 범위 밖).",
-            "",
-            "| 레코드 수 | " + " | ".join(p.name for p in PROFILES.values()) + " | 검증 오버헤드 비중(전용회선 100Mbps 기준) |",
-            "|---|" + "---|" * len(PROFILES) + "---|",
-        ]
-        for s in summaries:
-            net = network_estimates[s.record_count]
-            net_cells = " | ".join(f"{net[k]*1000:.1f}ms" for k in PROFILES)
-            ref_net_ms = net["leased_100m"] * 1000
-            share_pct = (s.overhead_seconds * 1000) / (ref_net_ms + s.overhead_seconds * 1000) * 100
-            report_lines.append(f"| {s.record_count:,} | {net_cells} | {share_pct:.1f}% |")
-        report_lines.append("")
-
-    report_path = os.path.join(config.RESULTS_DIR, "report.md")
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(report_lines))
-    print(f"\n리포트 저장 완료: {report_path}")
+    with open(os.path.join(result_dir, "report.md"), "w", encoding="utf-8") as stream:
+        stream.write("\n".join(report))
+    finished_at = datetime.now(timezone.utc)
+    manifest = {
+        "schema_version": 1, "run_id": run_id, "started_at": started_at.isoformat(),
+        "finished_at": finished_at.isoformat(), "elapsed_seconds": time.perf_counter() - monotonic_started,
+        "git_commit": _git_commit(), "python": sys.version, "platform": platform.platform(),
+        "arguments": vars(args), "result_directory": result_dir, "data_directory": data_dir,
+    }
+    with open(os.path.join(result_dir, "manifest.json"), "w", encoding="utf-8") as stream:
+        json.dump(manifest, stream, ensure_ascii=False, indent=2)
+    print(f"\n신규 버전 결과 저장 완료: {result_dir}")
 
 
 if __name__ == "__main__":
