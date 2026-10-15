@@ -36,7 +36,7 @@ def main():
     print('\n[S2] 반송 상한 CR (c_s=c_c=3)')
     for CR in (1, 2, 3, 99):
         for nm, k in (('L+D', 'LD'), ('L+D+Z', 'LDZ'), ('L+D+B+Z+X2', 'LDBZY')): line(f'CR={"∞" if CR == 99 else CR} {nm}', base, set(k), (CR, 3, 3))
-    print('\n[S3] 취소 금액 분포 (CR=2, c_s=c_c=3)')
+    print('\n[S3] 취소 금액 분포 (CR=2, c_s=c_c=3)')  # 로그 제목 유지. 실제 의미는 취소 생성 방식(sensitivity.py 설명 참조)
     for mode, lab in (('orig', '기존'), ('uniform', '균등'), ('unit', '단가 배수'), ('same', '동일 금액')):
         cs = base if mode == 'orig' else build(mode)
         for nm, k in (('X1+Z', 'LDBZX'), ('X2', 'LDBZY')): line(f'{lab} {nm}', cs, set(k), (2, 3, 3))

@@ -3,7 +3,9 @@
         / 실제 판정 불일치 공격 수(X1+Z 수락 & X2 거절) / 공격 탐지율(유형 균등 평균, 취소 삭제 별도) / 오차단율
   S1 취소 이월 허용 c_c ∈ {0,1,2,3}  (CR=2, c_s=3, 데이터 p=0.1 고정)
   S2 반송 상한 CR ∈ {1,2,3,∞}        (c_s=c_c=3; 생성기의 반송 거래는 최대 2건)
-  S3 금액 분포 기존/균등/단가 배수/동일 금액 (CR=2, c_s=c_c=3)
+  S3 취소 생성 방식 기존/균등/단가 배수/동일 금액 (CR=2, c_s=c_c=3). 로그 제목은 '취소 금액 분포'이지만 금액만 바꾼 통제 실험이 아니다:
+     균등·단가 배수·동일 금액은 make_dist로 기반영 이벤트 수를 누계와 독립적으로 뽑고 그 금액에서 누계를 계산하며(기존은 make_case5),
+     난수 사용 순서도 달라 파일마다 거래·이벤트 구성이 달라진다. 비교는 생성 방식 전체의 민감도로 해석한다.
   취소 식별자 수준은 tests/test_id_equivalence.py(전수 대조)로 따로 확인한다."""
 import random, itertools, statistics as st
 from collections import Counter
@@ -48,7 +50,8 @@ def disagree(cases, Aa):
     return att, leg
 
 def make_dist(rng, mode):
-    """make_case5와 같은 구조에서 취소 금액만 분포별로 뽑는다. mode='orig'는 make_case5 그대로."""
+    """make_case5와 같은 원장 구성에서 취소 이벤트를 방식별로 만든다. mode='orig'는 make_case5 그대로.
+    그 외 방식은 기반영 이벤트 수(C 거래 0~2건)를 누계와 독립적으로 뽑고 누계를 그 금액의 합으로 정한다. 금액만 바꾼 통제 비교가 아니다."""
     if mode == 'orig': return make_case5(rng, P, P)
     ids = list(range(1, 100)); rng.shuffle(ids); led = {}; A = lambda: rng.randint(10, 200)
     for _ in range(rng.randint(3, 6)): i = ids.pop(); led[i] = dict(m=0, amt=A(), st='U', cum=0, ev=[])

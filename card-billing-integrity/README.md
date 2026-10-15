@@ -18,7 +18,7 @@
 - **사전 검사.** 파일 자체 정합성 검사(같은 파일 안 매출 거래 식별자 중복 없음, 같은 파일 취소 합 ≤ 매출 금액; 코드 라벨 `내부:`)와 원장 검사(거래 식별자 존재, 가맹점 일치, 매출 금액 = 승인 금액, 취소 누적 ≤ 한도)는 `m2.atoms`에서 가져온다.
 
 ## 논문 수치와 재현 위치
-로그는 별도 표시가 없으면 `results/baseline_v2/`. 수치 대조: `tests/check_reported_numbers_v2.py`(58항목).
+로그는 별도 표시가 없으면 `results/baseline_v2/`. 수치 대조: `tests/check_reported_numbers_v2.py`(60항목).
 
 | 논문 내용 | 수치 | 스크립트 | 로그 |
 |---|---|---|---|
@@ -37,7 +37,7 @@
 | 정상 파일 거절의 원인 | 업무 가정 이내 파일 거절 0. 거절은 모두 실제 이월이 A를 넘은 파일(A=(2,3,3) 3건, A=(2,3,1) 133건). 청구완료 거래의 취소 단독 레코드 2,160건과 파일 자체 정합성 검사의 충돌 0 | `tests/test_falseblock_cause.py` | `falseblock_cause` |
 | 사례별 X1+Z vs X2(명제 3.4(c)와 일치) | 43,668건 판정 불일치 0 | `tests/casecmp.py` | `ref2_casecmp` |
 | 고정 실험 표1~5(공격 42,668건, 13유형) | 표1 X1·X2 89.2, Z 없는 X1 81.3, 표5 26.1/45.4/68.5 | `experiments/final_ref.py` | `ref2_final_ref` |
-| 민감도 S1 취소 이월, S2 반송 상한, S3 금액 분포 | 7개 지표 | `experiments/sensitivity.py` | `sensitivity` |
+| 민감도 S1 취소 이월, S2 반송 상한, S3 취소 생성 방식(로그 제목은 '취소 금액 분포'. 금액만 바꾼 통제 실험이 아니며 기반영 이벤트 수와 파일 구성도 달라짐) | 7개 지표 | `experiments/sensitivity.py` | `sensitivity` |
 | 민감도 S4 취소 ID 관측 | 16유형 X1·X2-금액 85.0, X1·X2-ID 91.2, X1-ID 수락·X2-ID 거절 0 | `experiments/sensitivity_s4.py`, `src/ref2id.py` | `sensitivity_s4` |
 | S4 ID 공격 조건부 탐지율(바탕 정상 파일이 수락된 경우) | 유령 ID는 ID를 떼면 정상 파일과 같아 금액 수준에서 0%(원리적으로 관측 불가), ID 3유형 평균 금액 수준 66.6 / ID 수준 100.0 | `experiments/s4_conditional.py` | `s4_conditional` |
 | S4 불일치 분해 | 유령 ID 995/865, 중복 ID 3/3, 기반영 취소 ID 재전송 0 | `experiments/s4_breakdown.py` | `s4_breakdown` |
@@ -46,6 +46,7 @@
 | 290/219의 표본 중복과 방향 | 290조합 = 표본 280(허용치 하나 270, 둘 10), 219조합 = 표본 215(211, 4). 290 전부 X1+Z 수락·X2 거절, 71조합은 한 거래만 X2 거절(30 + 41) | `tests/test_coupling_219_multiplicity.py` | `coupling_219_multiplicity` |
 | 반례 표(ref2) · 반례 3.1 예산형 · 3.2 포함관계형 | 구 판정기와 차이 0/66. 3.1: c_c=1에서만 X1+Z 수락·X2 거절. 3.2: c_c=0,1,2 모두 X1+Z 수락·X2 거절 | `tests/test_counterexamples_ref2.py` | `ref2_cex` |
 | 반례 3.1·3.2와 ID 식별력 사례의 네 관측 수준 판정 | 3.1: c_c=1에서만 X1 수락·X2 거절(금액·ID 모두). 3.2: 모든 c_c에서 X1 수락·X2 거절(금액·ID 모두). ID 식별력(a:1, b:1, 반영 {b}, b 재송신): X2-금액 수락·X2-ID 거절 | `tests/test_counterexamples_id.py` | `ref2id_cex` |
+| 표5 X2 기록 오류의 정상 파일 거절 원인 | 판정기는 반영 표시 합과 Z의 모순을 직접 검사하지 않음. 반영→미반영 오류: 모순 파일 63/130/241 중 61/124/230 수락, 거절은 예산 초과만. 미반영→반영 오류: 거절 261/454/685는 A4(미청구·반송 거래의 반영 표시)와 송신 조건의 부수 효과 | `tests/test_x2_error_cause.py` | `x2_error_cause` |
 | 위협 모델 T1(공격은 파일만 바꿈) | 공격 생성기가 원장을 바꾼 파일 0(5개 생성 조건 × 1,000) | `tests/test_attack_ledger_invariance.py` | `ledger_invariance` |
 | 누계 모호성 | (승인 목록, 누계)의 복수 반영 상태 | `experiments/run8.py` | `results/baseline/run8` |
 
@@ -53,7 +54,7 @@
 ```
 python3 run_all.py --rerun                 # 1차 세트 재실행, baseline 과의 diff 를 results/diff_*.txt 에 기록
 python3 run_all.py --set v2 --rerun        # 2차 세트(논문 수치) 재실행, results/diff_v2_*.txt
-python3 tests/check_reported_numbers_v2.py [baseline_v2|rerun_v2_<시각>]   # 논문 수치 대조(58항목)
+python3 tests/check_reported_numbers_v2.py [baseline_v2|rerun_v2_<시각>]   # 논문 수치 대조(60항목)
 python3 tests/check_reported_numbers.py [baseline|rerun_<시각>]           # 1차 세트 수치 대조(23항목)
 ```
 `python3 run_all.py`(옵션 없음)는 baseline이 없을 때만 실행된다. 각 검증은 독립 스크립트이며 `PYTHONPATH=src:tests:experiments:experiments/legacy`를 주면 개별 실행된다. `results/baseline*`은 덮어쓰지 않는다.
@@ -85,7 +86,7 @@ python3 tests/check_reported_numbers.py [baseline|rerun_<시각>]           # 1�
 7. 일부 1차 세트 스크립트는 import 시 실행되는 구조라(`props.py` 등) `props2/cls/cls2`가 `props`를 다시 실행한다. 원본 보존을 위해 수정하지 않았다.
 
 ## 재현성 기록
-- 공개판 재실행 차이 0: `results/diff_20261014_235603.txt`(1차), `results/diff_v2_20261014_235802.txt`(2차), 새 시험 추가 후 `results/diff_v2_20261015_114117.txt`(19개 로그), `results/diff_v2_20261015_130527.txt`(23개 로그), `results/diff_v2_20261015_132753.txt`(24개 로그) 모두 차이 0. 논문 수치 대조 FAIL 0(baseline_v2와 재실행 모두).
+- 공개판 재실행 차이 0: `results/diff_20261014_235603.txt`(1차), `results/diff_v2_20261014_235802.txt`(2차), 새 시험 추가 후 `results/diff_v2_20261015_114117.txt`(19개 로그), `results/diff_v2_20261015_130527.txt`(23개 로그), `results/diff_v2_20261015_132753.txt`(24개 로그), `results/diff_v2_20261015_145539.txt`(25개 로그, 설명 문구 수정 후) 모두 차이 0. 논문 수치 대조 FAIL 0(baseline_v2와 재실행 모두).
 - 이식성: `run_all.py`는 자식 프로세스에 `PYTHONUTF8=1`, `PYTHONIOENCODING=utf-8`을 주고 로그를 UTF-8로 읽고 쓴다(Windows 기본 인코딩에서 한글 로그가 달라지는 문제 방지). diff 보고서에 비정상 종료 작업 목록을 함께 적는다.
 - 해시 시드 독립성: 모든 작업을 `PYTHONHASHSEED=777`로 실행해도 baseline과 같았다(실행기는 0으로 고정).
 - 실행은 이 폴더 안에서 한다. 경로는 모두 `run_all.py` 위치 기준 상대 경로다. `conftest.py`는 저장소 루트에서 pytest를 실행할 때 이 폴더를 수집하지 않게 한다.

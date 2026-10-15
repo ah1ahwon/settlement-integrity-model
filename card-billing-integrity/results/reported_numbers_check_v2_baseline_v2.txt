@@ -56,5 +56,7 @@ PASS  [ledger_invariance] T1: 공격 생성기가 원장을 바꾼 파일 0 (5�
 PASS  [ref2id_cex] 반례 3.1: c_c=1에서만 X1(금액·ID) 수락·X2(금액·ID) 거절 (일치 1/1회 이상)
 PASS  [ref2id_cex] 반례 3.2: 모든 c_c에서 X1(금액·ID) 수락·X2(금액·ID) 거절 (일치 1/1회 이상)
 PASS  [ref2id_cex] ID 식별력: 모든 c_c에서 X2-금액 수락·X2-ID 거절 (일치 1/1회 이상)
+PASS  [x2_error_cause] 반영→미반영 5%: 거절 5(예산), 모순 파일 63 중 61 수락 (일치 1/1회 이상)
+PASS  [x2_error_cause] 미반영→반영 5/10/20%: 거절 261/454/685(A4 173/317/514) (일치 1/1회 이상)
 
 FAIL 0건

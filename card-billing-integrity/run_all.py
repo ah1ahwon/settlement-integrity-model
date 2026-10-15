@@ -48,6 +48,7 @@ JOBS_V2 = [  # (로그 이름, 스크립트, 추가 환경)
  ('ref2_cex',         'tests/test_counterexamples_ref2.py', {}),    # 반례 표 ref2 판, 반례 3.1 예산형·3.2 포함관계형
  ('ledger_invariance', 'tests/test_attack_ledger_invariance.py', {}), # 위협 모델 T1: 공격 생성기가 원장을 바꾸지 않음
  ('ref2id_cex',       'tests/test_counterexamples_id.py', {}),     # 반례 3.1·3.2와 ID 식별력 사례의 네 관측 수준 판정
+ ('x2_error_cause',   'tests/test_x2_error_cause.py', {}),         # 표5 X2 기록 오류(Z와 모순)에서 정상 파일 거절 원인 분해
 ]
 def run(job, outdir):
     name, path = job[:2]; extra = dict(job[2]) if len(job) > 2 else {}
