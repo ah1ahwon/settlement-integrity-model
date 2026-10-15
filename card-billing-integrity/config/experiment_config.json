@@ -1,0 +1,220 @@
+{
+  "note": "스크립트는 원본 그대로이며 시드/사례 수는 각 스크립트에 하드코딩되어 있다. 이 파일은 그 값을 기록한 것이다(소스 위치 포함).",
+  "environment": {
+    "python": "3.11.1",
+    "hashseed": 0,
+    "libraries": "표준 라이브러리만"
+  },
+  "business_assumption_A": {
+    "CR_max_returned_txns": 2,
+    "reference": "ref.py ref_accept(F, led, K, (CR, c_sale, c_cancel))"
+  },
+  "fixed_experiment": {
+    "scripts": [
+      "experiments/final_ref.py",
+      "experiments/refeval.py(표 재계산부)",
+      "tests/casecmp.py"
+    ],
+    "seed": 2024,
+    "legit_files": 1000,
+    "attack_cases": 42668,
+    "delay_prob_p": 0.1,
+    "CR": 2,
+    "base_c": 3,
+    "generator": "src/run9.py make_case5",
+    "attacks": "src/m4.py attacks4 (13 types)"
+  },
+  "independent_enumeration": {
+    "tests/refval.py": {
+      "seed": 4,
+      "trials": 400,
+      "reported_checks": 85624
+    },
+    "tests/val_x.py": {
+      "seed": 1,
+      "trials": 300,
+      "reported_checks": 162000
+    },
+    "tests/val.py": {
+      "seed": 5,
+      "trials": 40,
+      "reported_checks": 10428,
+      "model": "구 규칙(m2)"
+    }
+  },
+  "monotonicity": {
+    "tests/props.py": {
+      "seed": 8,
+      "cases": 300,
+      "old_rule_violations_c1": 5352,
+      "reported_pairs": 1155690
+    },
+    "experiments/refeval.py": {
+      "seed": 8,
+      "cases": 300,
+      "unified_violations": 0,
+      "c_monotone_checks": 114426
+    },
+    "tests/cls.py,cls2.py": {
+      "seed": 8,
+      "cases": 300,
+      "CR": 2,
+      "residual_violations": {
+        "c1": 10,
+        "c2": 5,
+        "c3": 0
+      }
+    }
+  },
+  "single_transaction_enumeration": {
+    "tests/thm2.py": {
+      "deterministic_part": "승인 취소 2~4건, 금액 1..5, 파일 취소 0~3건, 취소 이월 허용 0..2 전수 245280건",
+      "two_txn_random": {
+        "seed": 3,
+        "trials": 20000,
+        "budgets": [
+          1,
+          2,
+          3
+        ],
+        "reported_coupling_cases": 290
+      }
+    }
+  },
+  "ambiguity": {
+    "experiments/run8.py": {
+      "seeds": [
+        5,
+        41
+      ],
+      "random_ledgers_per_range": 20000,
+      "make_case4_cases": 2000
+    }
+  },
+  "independent_generator": {
+    "experiments/sim_batch.py": {
+      "seed": 3,
+      "files_per_p": 800,
+      "p_values": [
+        0.0,
+        0.05,
+        0.1,
+        0.2
+      ]
+    }
+  },
+  "set_v2": {
+    "judge": "src/ref2.py = ref.py + 업무 제약 '반영된 취소는 청구완료(C) 거래에만 존재'(원본 ref.py 보존)",
+    "tests/indep_check.py": {
+      "enumerator": "tests/indep_world.py (ref/m2/m4 import 없음)",
+      "seed": 11,
+      "ledgers": 60,
+      "K_sets": 18,
+      "A": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          2
+        ]
+      ],
+      "checks": 3063413,
+      "mismatch_ref2": 0,
+      "mismatch_ref": 2667
+    },
+    "tests/test_id_equivalence.py": {
+      "deterministic": "이벤트 1~4건, 금액 1..3, 이월 허용 0..2",
+      "checks": 13764,
+      "X1amount_vs_X1ID": 0,
+      "X1ID_vs_X2": 355
+    },
+    "experiments/sensitivity.py": {
+      "seed": 2024,
+      "legit_files_per_condition": 1000,
+      "p": 0.1,
+      "S1_cc": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "S2_CR": [
+        1,
+        2,
+        3,
+        "inf(99)"
+      ],
+      "S3_amount_modes": [
+        "orig",
+        "uniform",
+        "unit",
+        "same"
+      ]
+    },
+    "shim_reruns": "variants/ref2_shim 를 PYTHONPATH 앞에 두어 기존 스크립트를 ref2로 재실행",
+    "environments_verified": [
+      "Python 3.11.1 macOS arm64 (baseline, rerun)",
+      "Python 3.14.8 Homebrew 같은 기계 (rerun, 두 세트 차이 0)"
+    ],
+    "tests/test_prop33b.py": {
+      "scope": "단일 C 거래, 이벤트 1~4, 금액 1..3, c_c 0..2",
+      "purpose": "명제 3.3(b-1)/(b-2) 분리"
+    },
+    "tests/test_coupling_219.py": {
+      "seed": 3,
+      "samples": 60000,
+      "purpose": "290 = 71 + 219 분류"
+    },
+    "tests/test_ref2id_consistency.py": {
+      "scope": "단일 C 거래, 13,764건",
+      "purpose": "ref2id vs 별도 ID 판정식"
+    },
+    "experiments/sensitivity_s4.py": {
+      "seed": 2024,
+      "N": 1000,
+      "p": 0.1,
+      "A": [
+        [
+          2,
+          3,
+          3
+        ],
+        [
+          2,
+          3,
+          1
+        ]
+      ],
+      "levels": [
+        "X1-금액",
+        "X1-ID",
+        "X2-금액",
+        "X2-ID"
+      ],
+      "judge": "src/ref2id.py"
+    },
+    "experiments/s4_breakdown.py": {
+      "purpose": "S4 ID 공격 불일치 유형별 분해",
+      "data": "sensitivity_s4.build_id"
+    }
+  }
+}

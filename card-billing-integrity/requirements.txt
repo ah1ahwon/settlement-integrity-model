@@ -1,0 +1,2 @@
+# 외부 라이브러리 없음. Python 표준 라이브러리(random, itertools, collections, statistics, copy)만 사용.
+# 기록된 실행 환경: Python 3.11.1, macOS (arm64). PYTHONHASHSEED=0 으로 실행(run_all.py가 설정).
