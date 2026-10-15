@@ -1,12 +1,34 @@
-# 정산 파일 무결성 검증 모델 (Settlement File Integrity Verification Model)
+# settlement-integrity-model
 
-석사 논문 연구계획서 "대용량 트랜잭션 처리 시스템의 정산 데이터 무결성 보장 및
-부정 방지 모델 연구"의 3단계 이중 해시 체이닝 검증 모델을 Python으로 구현한
-시뮬레이션 코드와 더미데이터 생성기입니다.
+석사학위논문 「카드 청구 데이터의 변조 식별 가능성 분석: 신뢰정보와 정상 청구 지연 조건을 중심으로」의
+재현 패키지와, 주제를 정하기 전에 수행한 예비 연구 코드를 담은 저장소입니다.
 
-## 3단계 검증 메커니즘과 코드 매핑
+## 학위논문 재현 패키지: `card-billing-integrity/`
 
-| 논문상 단계 | 설명 | 구현 모듈 |
+카드 청구 파일에서 변조가 식별 가능한지를, 검증자가 가진 신뢰정보(승인 원장, 청구일자, 반송 이력,
+기반영 취소 누계, 취소 승인 목록과 반영 상태)와 정상 업무 지연(매출·취소 이월, 반송)을 허용하는
+업무 가정에 따라 분석합니다. 청구 파일은 특정 기관의 전자문서 명세가 아니라 연구자가 독립적으로
+정의한 합성 모델이며, 모든 데이터는 난수로 생성합니다.
+
+- 판정: 관측과 일치하는 정당 세계가 존재하면 수락하는 가능 세계 존재 판정(기준 판정기 `src/ref2.py`)
+- 검증: 판정기를 사용하지 않는 독립 열거기와의 전수 대조, 명제 검증, 단조성, 민감도 S1~S4
+- 실행: `cd card-billing-integrity && python3 run_all.py --set v2 --rerun` (표준 라이브러리만 사용)
+- 논문 수치와 스크립트·로그의 대응, 한계는 [`card-billing-integrity/README.md`](card-billing-integrity/README.md)를 보십시오.
+
+## 예비 연구 (논문 결과 아님)
+
+아래 코드는 연구 주제를 정하는 과정에서 작성한 것으로, 학위논문의 수치·결론에는 사용하지 않습니다.
+저장소 루트의 `requirements.txt`(pandas, numpy, matplotlib, pytest)는 이 예비 연구용입니다.
+
+### A. 정산 파일 전송 무결성: 이중 해시 체이닝 모델
+
+초기 연구계획서 단계에서 정산 파일 생성부터 전송까지 파일 전체 해시와 레코드 해시 체인으로
+변조를 차단하는 3단계 모델을 구현한 시뮬레이션입니다. 정산 데이터는 업무 필드를 단순화한
+합성 CSV입니다.
+
+#### 3단계 검증 메커니즘과 코드 매핑
+
+| 단계 | 설명 | 구현 모듈 |
 |---|---|---|
 | Phase 1: 생성 및 격리 | 정산 파일 생성 → 파일 전체 SHA-256과 레코드 체인 계산 → 메타데이터와 체인 원장을 하나의 번들로 원자적 write-once 저장 | `data_generator.py`, `settlement_batch.py`, `hashchain.py`, `hash_vault.py` |
 | Phase 2: 대기 및 전송 | 스케줄에 따라 전송 에이전트(FTP/SFTP 모사) 기동 | `transfer_agent.py` |
@@ -17,7 +39,7 @@
 | 네트워크 지연 추정 | 대역폭 가정 기반 종단간(end-to-end) 전송 지연 추정 | `network.py` |
 | 실험 오케스트레이션 | Case A/B 반복 실행, 데이터 규모별 지연시간 스윕, RQ4 비교 | `simulate.py` |
 
-### 해시 체이닝(Hash Chaining) 구조
+#### 해시 체이닝(Hash Chaining) 구조
 
 제안 모델은 역할이 다른 두 무결성 값을 한 번의 파일 읽기에서 함께 계산한다.
 
@@ -33,7 +55,7 @@
 `FILE_BYTES_MISMATCH`로 차단한다. 두 값이 모두 일치해야만 전송이 허용된다.
 
 파일 전체 SHA-256만으로는 변조 위치를 알 수 없으므로, 정산 파일의 각
-거래(DATA 레코드)를 이전 체인값과 연결해 누적 해싱한다. 컬럼명과 순서를
+거래(업무 레코드)를 이전 체인값과 연결해 누적 해싱한다. 컬럼명과 순서를
 바꾸는 헤더 변조도 탐지하기 위해 헤더 해시를 체인에 먼저 반영한다.
 
 ```
@@ -52,7 +74,7 @@ chain_i = SHA256(chain_{i-1} || SHA256(record_i))   for i = 1..N
 - 정상 파일 흐름에서는 원장을 읽지 않으므로, 포렌식(위치 특정) 비용은 실제
   변조가 탐지된 예외 상황에만 발생한다.
 
-### Fail-closed 오류 사유 코드
+#### Fail-closed 오류 사유 코드
 
 `TransferResult.reason_code`는 정상 시 `OK`, 차단 시
 `FILE_HASH_MISMATCH`, `CHAIN_HASH_MISMATCH`, `FILE_AND_CHAIN_MISMATCH`,
@@ -60,14 +82,14 @@ chain_i = SHA256(chain_{i-1} || SHA256(record_i))   for i = 1..N
 `DESTINATION_CONFLICT`, `PROMOTION_FAILED` 중 하나를 반환한다. 알 수 없는 검증
 예외나 격리 I/O 오류가 발생해도 전송 허용으로 되돌아가지 않는다.
 
-## 설치
+#### 설치
 
 ```bash
 cd settlement-integrity-model
 python3 -m pip install -r requirements.txt
 ```
 
-## 실행
+#### 실행
 
 ```bash
 # 전체 재실험. run-id별 새 폴더를 만들며 기존 결과는 덮어쓰지 않음
@@ -111,7 +133,7 @@ python3 src/simulate.py --case latency --latency-sizes 1000 10000 50000 100000
 - `report.md`: 탐지율 / 위치 특정 / RQ4 / 공격 규모 / 수정된 지연 측정 요약
 - `manifest.json`: 실행 인자, Git commit, Python·OS, 시작·종료 시각과 결과 경로
 
-### 검증된 v2 재실험 결과
+#### 검증된 v2 재실험 결과
 
 `v2_20260918_atomic_failclosed_100k` 실행은 100,000건, 기본 시행 5회,
 공격 규모별 5회, 성능 구간별 5회 조건으로 수행했다.
@@ -125,10 +147,10 @@ python3 src/simulate.py --case latency --latency-sizes 1000 10000 50000 100000
 수치는 `results/runs/v2_20260918_atomic_failclosed_100k/`의 CSV와
 `manifest.json`을 근거로 하며, 이전 `results/` 결과는 수정하지 않았다.
 
-### RQ4: 기존 방식(파일 크기·수정시각 비교) 대비 개선 효과
+#### RQ4: 단순 점검(파일 크기·수정시각 비교) 대비 효과
 
-`--case naive`는 정산 파일 인터페이스 구간에서 실무적으로 흔히 쓰이는 가장
-단순한 무결성 점검(파일 크기·수정시각 비교)을 재현해, 제안 모델과 정량적으로
+`--case naive`는 비교 기준으로 가정한 가장 단순한 무결성 점검(파일 크기·
+수정시각 비교)을 구현해, 제안 모델과 정량적으로
 대조한다. 각 변조 방식에 대해 두 가지 공격자를 가정한다 — (1) 변조 후
 수정시각을 그대로 두는 as-is 공격자, (2) `os.utime()`으로 수정시각까지
 원본과 동일하게 위조하는, 기초적인 안티포렌식 지식을 가진 공격자.
@@ -138,7 +160,7 @@ python3 src/simulate.py --case latency --latency-sizes 1000 10000 50000 100000
 판정을 함께 기록한다. `rq4_comparison.csv`에는 제안 모델의 오류 사유 코드
 분포도 저장되므로 결과를 사후 검증할 수 있다.
 
-### 성능 측정 구간
+#### 성능 측정 구간
 
 해시 함수 내부 시간만 합산하지 않고 보호 모델의 실제 처리 경계를 측정한다.
 
@@ -154,11 +176,11 @@ python3 src/simulate.py --case latency --latency-sizes 1000 10000 50000 100000
 한계가 있다. 이를 보완하기 위해 `src/network.py`가 회선 대역폭 가정(전용회선
 100Mbps/10Mbps, 인터넷 VPN 평균)에 기반한 종단간(end-to-end) 전송 시간을
 분석적으로 추정하며, `--case latency` 실행 시 `report.md`에 함께 기록된다.
-실측치가 아니라 추정치이므로 논문에 인용할 때는 반드시 "대역폭 가정 기반
+실측치가 아니라 추정치이므로 인용할 때는 반드시 "대역폭 가정 기반
 추정"이라고 명시해야 한다. 수치 결론은 특정 실행의 `manifest.json`과
 `latency_sweep.csv`를 함께 제시해야 한다.
 
-## 테스트
+#### 테스트
 
 ```bash
 python3 -m pytest tests/ -v
@@ -171,7 +193,34 @@ python3 -m pytest tests/ -v
 또한 Vault 저장 중단 시 부분 엔트리가 남지 않는지, 경로 탈출형 ID·미등록
 파일·검증기 예외·전송 목적지 충돌에서 항상 차단되는지까지 검사합니다.
 
+### B. 레코드 삭제에 대한 소거 부호 복구 비교
+
+복구 단위(고정 블록 / 내용 기반 분할 CDC / 레코드)에 따라 같은 중복정보 예산에서 레코드 삭제를 얼마나
+복구할 수 있는지 비교한 예비실험입니다. GF(256) Cauchy Reed-Solomon 소거 부호를 공통으로 사용합니다.
+
+| 모듈 | 내용 |
+|---|---|
+| `src/erasure.py` | 소거 부호(스트라이프당 데이터 k ≤ 250, 패리티 m ≤ 5, 알려진 위치의 소거만 복구) |
+| `src/unit_recovery.py` | 복구 단위별 분할·위치 식별, 서명된 매니페스트, 재검증 |
+| `src/prelim_experiment.py` | 같은 예산에서 세 방식 비교 |
+| `src/real_data_experiment.py` | 공개 데이터 파일 구간에 같은 조건 적용 |
+| `src/stripe_attack.py` | 배치를 아는 공격자의 동일 스트라이프 집중 삭제(복구 한계 확인) |
+| `src/budget_sweep.py`, `src/budget_sweep_analysis.py` | 목표 성공률에 필요한 최소 예산 |
+| `src/analytic_model.py` | 해석적 비용·복구 모델(1차 근사)과 예비실험 대조 |
+| `tests/test_unit_recovery.py` | 복구·검증 단위 테스트 |
+
 ## 디렉터리 구조
+
+```
+settlement-integrity-model/
+├── card-billing-integrity/   # 학위논문 재현 패키지 (자체 README)
+├── src/                      # 예비 연구 A(해시 체이닝)·B(소거 부호) 코드
+├── tests/                    # 예비 연구 테스트
+├── data/runs/<run-id>/       # 예비 연구 A 실행별 Vault/전송/격리 데이터 (git 제외)
+└── results/runs/<run-id>/    # 예비 연구 A 실행별 CSV/리포트/manifest
+```
+
+예비 연구 A의 모듈 구성:
 
 ```
 settlement-integrity-model/
