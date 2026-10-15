@@ -21,6 +21,7 @@
 python3 run_all.py                 # baseline 이 없을 때만 실행(있으면 거부)
 python3 run_all.py --rerun         # 새 디렉터리에 재실행하고 baseline 과의 diff 를 results/diff_*.txt 에 기록
 python3 tests/check_reported_numbers.py [baseline|rerun_<시각>]   # 보고 수치와 로그 대조(23항목)
+python3 tests/check_reported_numbers_v2.py [baseline_v2|rerun_v2_<시각>]   # 2차 세트 보고 수치 대조(32항목)
 ```
 각 검증은 독립 스크립트이며 `python3 <스크립트>`에 `PYTHONPATH=src:tests:experiments:experiments/legacy`를 주면 개별 실행된다.
 
@@ -62,7 +63,7 @@ python3 tests/check_reported_numbers.py [baseline|rerun_<시각>]   # 보고 수
 `results/baseline`은 덮어쓰지 않는다. `--rerun`은 새 디렉터리에 저장하고 차이를 `results/diff_*.txt`에 줄 단위로 기록한다. 현재 baseline 대비 재실행 차이는 0개 로그(`results/diff_20261014_174200.txt`).
 
 ## 2차 세트 (2026-10-14 추가): 독립 열거기, 판정기 ref2, 민감도
-실행: `python3 run_all.py --set v2` (기준 `results/baseline_v2`), `--set v2 --rerun`으로 재실행·비교.
+실행: `python3 run_all.py --set v2` (기준 `results/baseline_v2`), `--set v2 --rerun`으로 재실행·비교. 보고 수치 대조는 `tests/check_reported_numbers_v2.py`(baseline_v2와 재실행 모두 FAIL 0).
 - `tests/indep_world.py`: 판정기(`ref`, `m2`, `m4`)를 import하지 않는 열거기. 정당 세계를 정의대로 전부 만들고 관측 함수로 거른다.
 - 발견: 원 판정기 `ref.py`에는 업무 제약 "반영된 취소는 청구완료 거래에만 존재"가 빠져 있었다(불일치 2,667건, `indep_check_ref.log`). 구 열거기 `refval.py`도 같은 정의를 공유해 이를 잡지 못했다(`ref2_refval.log`의 3,036건은 구 열거기 쪽 결함).
 - `src/ref2.py`: 위 제약을 추가한 판정기. 독립 열거기와 3,063,413건 불일치 0. 원본 `ref.py`는 수정하지 않았다.
