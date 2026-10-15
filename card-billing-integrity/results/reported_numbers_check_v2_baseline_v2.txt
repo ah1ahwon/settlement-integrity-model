@@ -53,5 +53,8 @@ PASS  [ref2_cex] 반례 표: explainable4와 ref2 판정 차이 0/66 (일치 1/1
 PASS  [ref2_cex] 반례 3.1 예산형: c_c=0 둘 다 거절, c_c=1 X1+Z 수락·X2 거절, c_c=2 둘 다 수락 (일치 1/1회 이상)
 PASS  [ref2_cex] 반례 3.2 포함관계형: c_c=0,1,2 모두 X1+Z 수락·X2 거절 (일치 1/1회 이상)
 PASS  [ledger_invariance] T1: 공격 생성기가 원장을 바꾼 파일 0 (5개 생성 조건) (일치 5/5회 이상)
+PASS  [ref2id_cex] 반례 3.1: c_c=1에서만 X1(금액·ID) 수락·X2(금액·ID) 거절 (일치 1/1회 이상)
+PASS  [ref2id_cex] 반례 3.2: 모든 c_c에서 X1(금액·ID) 수락·X2(금액·ID) 거절 (일치 1/1회 이상)
+PASS  [ref2id_cex] ID 식별력: 모든 c_c에서 X2-금액 수락·X2-ID 거절 (일치 1/1회 이상)
 
 FAIL 0건

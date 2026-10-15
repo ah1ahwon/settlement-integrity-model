@@ -18,7 +18,7 @@
 - **사전 검사.** 파일 자체 정합성 검사(같은 파일 안 매출 거래 식별자 중복 없음, 같은 파일 취소 합 ≤ 매출 금액; 코드 라벨 `내부:`)와 원장 검사(거래 식별자 존재, 가맹점 일치, 매출 금액 = 승인 금액, 취소 누적 ≤ 한도)는 `m2.atoms`에서 가져온다.
 
 ## 논문 수치와 재현 위치
-로그는 별도 표시가 없으면 `results/baseline_v2/`. 수치 대조: `tests/check_reported_numbers_v2.py`(55항목).
+로그는 별도 표시가 없으면 `results/baseline_v2/`. 수치 대조: `tests/check_reported_numbers_v2.py`(58항목).
 
 | 논문 내용 | 수치 | 스크립트 | 로그 |
 |---|---|---|---|
@@ -45,6 +45,7 @@
 | 탐지율 정의 통일(표1, S1~S4) | 전체 거절률 T와 조건부 탐지율 C(바탕 정상 파일이 같은 수준·가정에서 수락된 공격만). 예: S1 c_c=1 T 92.8 / C 91.9, 취소 삭제 45.1 / 36.9. S4 A=(2,3,1) 금액 수준 16유형 88.8 / 87.1 | `experiments/conditional_detection.py` | `conditional_detection` |
 | 290/219의 표본 중복과 방향 | 290조합 = 표본 280(허용치 하나 270, 둘 10), 219조합 = 표본 215(211, 4). 290 전부 X1+Z 수락·X2 거절, 71조합은 한 거래만 X2 거절(30 + 41) | `tests/test_coupling_219_multiplicity.py` | `coupling_219_multiplicity` |
 | 반례 표(ref2) · 반례 3.1 예산형 · 3.2 포함관계형 | 구 판정기와 차이 0/66. 3.1: c_c=1에서만 X1+Z 수락·X2 거절. 3.2: c_c=0,1,2 모두 X1+Z 수락·X2 거절 | `tests/test_counterexamples_ref2.py` | `ref2_cex` |
+| 반례 3.1·3.2와 ID 식별력 사례의 네 관측 수준 판정 | 3.1: c_c=1에서만 X1 수락·X2 거절(금액·ID 모두). 3.2: 모든 c_c에서 X1 수락·X2 거절(금액·ID 모두). ID 식별력(a:1, b:1, 반영 {b}, b 재송신): X2-금액 수락·X2-ID 거절 | `tests/test_counterexamples_id.py` | `ref2id_cex` |
 | 위협 모델 T1(공격은 파일만 바꿈) | 공격 생성기가 원장을 바꾼 파일 0(5개 생성 조건 × 1,000) | `tests/test_attack_ledger_invariance.py` | `ledger_invariance` |
 | 누계 모호성 | (승인 목록, 누계)의 복수 반영 상태 | `experiments/run8.py` | `results/baseline/run8` |
 
@@ -52,7 +53,7 @@
 ```
 python3 run_all.py --rerun                 # 1차 세트 재실행, baseline 과의 diff 를 results/diff_*.txt 에 기록
 python3 run_all.py --set v2 --rerun        # 2차 세트(논문 수치) 재실행, results/diff_v2_*.txt
-python3 tests/check_reported_numbers_v2.py [baseline_v2|rerun_v2_<시각>]   # 논문 수치 대조(55항목)
+python3 tests/check_reported_numbers_v2.py [baseline_v2|rerun_v2_<시각>]   # 논문 수치 대조(58항목)
 python3 tests/check_reported_numbers.py [baseline|rerun_<시각>]           # 1차 세트 수치 대조(23항목)
 ```
 `python3 run_all.py`(옵션 없음)는 baseline이 없을 때만 실행된다. 각 검증은 독립 스크립트이며 `PYTHONPATH=src:tests:experiments:experiments/legacy`를 주면 개별 실행된다. `results/baseline*`은 덮어쓰지 않는다.
@@ -84,7 +85,7 @@ python3 tests/check_reported_numbers.py [baseline|rerun_<시각>]           # 1�
 7. 일부 1차 세트 스크립트는 import 시 실행되는 구조라(`props.py` 등) `props2/cls/cls2`가 `props`를 다시 실행한다. 원본 보존을 위해 수정하지 않았다.
 
 ## 재현성 기록
-- 공개판 재실행 차이 0: `results/diff_20261014_235603.txt`(1차), `results/diff_v2_20261014_235802.txt`(2차), 새 시험 추가 후 `results/diff_v2_20261015_114117.txt`(19개 로그), `results/diff_v2_20261015_130527.txt`(23개 로그) 모두 차이 0. 논문 수치 대조 FAIL 0(baseline_v2와 재실행 모두).
+- 공개판 재실행 차이 0: `results/diff_20261014_235603.txt`(1차), `results/diff_v2_20261014_235802.txt`(2차), 새 시험 추가 후 `results/diff_v2_20261015_114117.txt`(19개 로그), `results/diff_v2_20261015_130527.txt`(23개 로그), `results/diff_v2_20261015_132753.txt`(24개 로그) 모두 차이 0. 논문 수치 대조 FAIL 0(baseline_v2와 재실행 모두).
 - 이식성: `run_all.py`는 자식 프로세스에 `PYTHONUTF8=1`, `PYTHONIOENCODING=utf-8`을 주고 로그를 UTF-8로 읽고 쓴다(Windows 기본 인코딩에서 한글 로그가 달라지는 문제 방지). diff 보고서에 비정상 종료 작업 목록을 함께 적는다.
 - 해시 시드 독립성: 모든 작업을 `PYTHONHASHSEED=777`로 실행해도 baseline과 같았다(실행기는 0으로 고정).
 - 실행은 이 폴더 안에서 한다. 경로는 모두 `run_all.py` 위치 기준 상대 경로다. `conftest.py`는 저장소 루트에서 pytest를 실행할 때 이 폴더를 수집하지 않게 한다.
