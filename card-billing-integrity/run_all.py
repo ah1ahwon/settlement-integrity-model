@@ -43,6 +43,10 @@ JOBS_V2 = [  # (로그 이름, 스크립트, 추가 환경)
  ('falseblock_cause', 'tests/test_falseblock_cause.py', {}),        # 정상 파일 거절 원인(가정 초과) 분해, 취소 단독 레코드 확인
  ('coupling_219_bounds', 'tests/test_coupling_219_bounds.py', {}),  # 219 분류 경계조건: 조합/표본 수, X2 정의, 판정 패턴
  ('s4_conditional',   'experiments/s4_conditional.py', {}),         # S4 ID 공격: 바탕 파일 수락 조건부 탐지율
+ ('conditional_detection', 'experiments/conditional_detection.py', {}), # 모든 표의 탐지율: 전체 거절률 T와 조건부 탐지율 C
+ ('coupling_219_multiplicity', 'tests/test_coupling_219_multiplicity.py', {}), # 290/219의 표본 중복, 판정 방향, 71조합 패턴
+ ('ref2_cex',         'tests/test_counterexamples_ref2.py', {}),    # 반례 표 ref2 판, 반례 3.1 예산형·3.2 포함관계형
+ ('ledger_invariance', 'tests/test_attack_ledger_invariance.py', {}), # 위협 모델 T1: 공격 생성기가 원장을 바꾸지 않음
 ]
 def run(job, outdir):
     name, path = job[:2]; extra = dict(job[2]) if len(job) > 2 else {}
