@@ -1,0 +1,4 @@
+python 3.11.1
+platform macOS-26.5.1-arm64-arm-64bit
+PYTHONHASHSEED 0
+date 20261015_114117

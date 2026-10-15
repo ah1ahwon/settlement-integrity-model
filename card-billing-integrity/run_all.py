@@ -40,6 +40,9 @@ JOBS_V2 = [  # (로그 이름, 스크립트, 추가 환경)
  ('ref2id_consistency', 'tests/test_ref2id_consistency.py', {}),   # S4 ID 판정기 vs 별도 ID 판정식 13,764건
  ('sensitivity_s4',   'experiments/sensitivity_s4.py', {}),         # ④ 민감도 S4: 식별자·반영 상태 관측 수준
  ('s4_breakdown',     'experiments/s4_breakdown.py', {}),           # S4 ID 공격 불일치의 유형별 분해
+ ('falseblock_cause', 'tests/test_falseblock_cause.py', {}),        # 정상 파일 거절 원인(가정 초과) 분해, 취소 단독 레코드 확인
+ ('coupling_219_bounds', 'tests/test_coupling_219_bounds.py', {}),  # 219 분류 경계조건: 조합/표본 수, X2 정의, 판정 패턴
+ ('s4_conditional',   'experiments/s4_conditional.py', {}),         # S4 ID 공격: 바탕 파일 수락 조건부 탐지율
 ]
 def run(job, outdir):
     name, path = job[:2]; extra = dict(job[2]) if len(job) > 2 else {}

@@ -30,5 +30,14 @@ PASS  [sensitivity_s4] A=(2,3,3) X1-ID·X2-ID: ID3유형 100, 16유형 91.2 (일
 PASS  [sensitivity_s4] X1-ID 수락·X2-ID 거절 0 (두 A × 13유형/ID/정상) (일치 6/6회 이상)
 PASS  [s4_breakdown] A=(2,3,3) 유령 ID 995, 중복 ID 3, 기반영 재전송 0 (일치 1/1회 이상)
 PASS  [s4_breakdown] A=(2,3,1) 유령 ID 865, 중복 ID 3 (일치 1/1회 이상)
+PASS  [falseblock_cause] 청구완료 거래 취소 단독 2,160건(896파일), 파일 자체 정합성 위반 0 (일치 1/1회 이상)
+PASS  [falseblock_cause] 가정 이내 정상 파일 거절 0 (두 A × 두 K) (일치 4/4회 이상)
+PASS  [falseblock_cause] A=(2,3,3) 거절 3 = 가정 초과 3(매출 이월 1, 취소 이월 2) (일치 1/1회 이상)
+PASS  [falseblock_cause] A=(2,3,1) 거절 133 = 가정 초과 133(취소 이월 132, 매출 이월 1) (일치 1/1회 이상)
+PASS  [coupling_219_bounds] X2 정의(L+D+B+Y)와 L+D+B+Z+Y 판정 차이 0 (일치 1/1회 이상)
+PASS  [coupling_219_bounds] 290조합(표본 280), 219조합(표본 215) (일치 1/1회 이상)
+PASS  [coupling_219_bounds] 219 모두 전체 X1 수락·X2 거절, 거래별 둘 다 수락 (일치 1/1회 이상)
+PASS  [s4_conditional] 유령 ID: ID를 떼면 정상 파일과 동일 998, 금액 수준 조건부 탐지 0 (일치 1/1회 이상)
+PASS  [s4_conditional] ID 3유형 조건부 평균: 금액 수준 66.6, ID 수준 100.0 (일치 2/2회 이상)
 
 FAIL 0건
