@@ -1,0 +1,39 @@
+{
+  "base_commit": "5b43918b168e3cd6b675f98e18245f7a773fc3e9",
+  "revision": "review_v4_local_20261026",
+  "python": "3.11.1",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "hash_seed": 0,
+  "date": "2026-10-26 22:32:39",
+  "commands": [
+    "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 experiments/deletion_metrics.py",
+    "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 tests/test_deletion_budget.py",
+    "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 experiments/s5_ambiguity.py --output results/review_v4/s5_ambiguity.json",
+    "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 experiments/joint_deletion.py",
+    "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 tests/test_joint_deletion_boundary.py"
+  ],
+  "files": {
+    "card-billing-integrity/experiments/deletion_metrics.py": "850586462f62e7aed2e26171daf2f720479752781531eabfaa24bb01a272cc15",
+    "card-billing-integrity/experiments/s5_ambiguity.py": "9b41ff81e710f8101d491d3ce649015353273ba07984fee5d14865292591357e",
+    "card-billing-integrity/tests/test_deletion_budget.py": "7f961565dc55428f3913b8ab7a6d3692c81e44daf25d823089bd7df3d995cd3f",
+    "card-billing-integrity/src/ref3.py": "30c54a054a6b325ceee5fa38ecec1147cb098cca23b55ddb82ebd4e465dac4dd",
+    "card-billing-integrity/src/ref2.py": "37386b307c1df22859d66246923ba50c6fc9dabbbcfafae6714474c2d9c1587d",
+    "card-billing-integrity/src/ref2id.py": "a00a00b191546bb1ac7599f85f19d16ba0fa5bf639b344b245ee23c960366293",
+    "card-billing-integrity/src/m2.py": "1c2dac2eca7e76df3dbc232ffca224893e7e6ed332fa2b21b305d905fe1cc477",
+    "card-billing-integrity/src/m4.py": "d90a781d981f4b3024a3064bfa9d0d0204ade7476b2bd2699805f9df4fd9d0a3",
+    "card-billing-integrity/src/run9.py": "67118f6b3bdf5e8d53de55abb6ea7c08e671f205f4a43630adce3d8e8578723e",
+    "card-billing-integrity/experiments/sensitivity.py": "dc988a5157fc3c3c9f0aafd0f0ff29efaf8f644492694fe22e1f94358792f9e7",
+    "card-billing-integrity/experiments/sensitivity_s4.py": "f861dbb77be1cdf90e3583f65e840f1aa8472a4a22a3c1241c5dd25d4827cc15",
+    "card-billing-integrity/results/review_v4/deletion_metrics.log": "2732394c7f2f34aa583f780c894fb21b098a0a0b4487f9fe959e76cae41d6ab9",
+    "card-billing-integrity/results/review_v4/deletion_budget.log": "5dfffcd328be348d5eb49854d26f4a1ebcf111e644320c8ed2cb953587ed8400",
+    "card-billing-integrity/results/review_v4/s5_ambiguity.log": "85f2993d2c2c179977b60b6356426f5f6e7bf2146d245a0f263515e4d69b7b60",
+    "card-billing-integrity/results/review_v4/s5_ambiguity.json": "b21ee5f5abcf29e76ce445ed34a1b56812cad4090f0c1844ace30a74e3200088",
+    "card-billing-integrity/experiments/joint_deletion.py": "8bf4c63548fcfc1d3cec79cc916fbef29841201540ba03de54400151756237f5",
+    "card-billing-integrity/results/review_v4/joint_deletion.log": "7217c1ee4d9342d73b685cc3d168773285ec0a699ddad8fb3d8dda1ff73a06ba",
+    "card-billing-integrity/tests/test_joint_deletion_boundary.py": "6480d86fc69f3060bc936e6b0d90cac4c12d64442bbbf7d3d9d96e7ee949707e",
+    "card-billing-integrity/results/review_v4/joint_deletion_boundary.log": "79bb370eabd5593ca1e5f859090913629760575a63d88497617a7a2b8532797e"
+  },
+  "additional_verification_date": "2026-10-26",
+  "additional_verification_python": "3.12.14",
+  "additional_verification_platform": "macOS-26.5.1-arm64-arm-64bit"
+}

@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-04T14:32:47.697807+09:00",
+  "scope": "same-computer repeat execution; fresh working directory; not independent-team or cross-OS validation",
+  "python": "3.12.14 (main, Aug 25 2026, 13:50:33) [Clang 22.1.3 ]",
+  "executable": "/Users/jeong-awon/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "hash_seed": 0,
+  "commands": [
+    {
+      "name": "boundary",
+      "arguments": [
+        "tests/test_ref3_boundary.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.035,
+      "log": "results/recheck_20261104/boundary.log"
+    },
+    {
+      "name": "id_equivalence",
+      "arguments": [
+        "tests/test_ref3_id_equivalence.py"
+      ],
+      "exit_code": 0,
+      "seconds": 6.629,
+      "log": "results/recheck_20261104/id_equivalence.log"
+    },
+    {
+      "name": "deletion_metrics",
+      "arguments": [
+        "experiments/deletion_metrics.py"
+      ],
+      "exit_code": 0,
+      "seconds": 2.309,
+      "log": "results/recheck_20261104/deletion_metrics.log",
+      "previous_log": "results/review_v4/deletion_metrics.log",
+      "exact_stdout_match": true
+    },
+    {
+      "name": "joint_deletion",
+      "arguments": [
+        "experiments/joint_deletion.py"
+      ],
+      "exit_code": 0,
+      "seconds": 8.716,
+      "log": "results/recheck_20261104/joint_deletion.log",
+      "previous_log": "results/review_v4/joint_deletion.log",
+      "exact_stdout_match": true
+    },
+    {
+      "name": "joint_boundary",
+      "arguments": [
+        "tests/test_joint_deletion_boundary.py"
+      ],
+      "exit_code": 0,
+      "seconds": 9.717,
+      "log": "results/recheck_20261104/joint_boundary.log",
+      "previous_log": "results/review_v4/joint_deletion_boundary.log",
+      "exact_stdout_match": true
+    },
+    {
+      "name": "deletion_budget",
+      "arguments": [
+        "tests/test_deletion_budget.py"
+      ],
+      "exit_code": 0,
+      "seconds": 200.021,
+      "log": "results/recheck_20261104/deletion_budget.log",
+      "previous_log": "results/review_v4/deletion_budget.log",
+      "exact_stdout_match": true
+    },
+    {
+      "name": "adaptive",
+      "arguments": [
+        "experiments/adaptive_ambiguity.py",
+        "--output",
+        "results/review_v5/adaptive_ambiguity.json"
+      ],
+      "exit_code": 0,
+      "seconds": 26.996,
+      "log": "results/recheck_20261104/adaptive.log",
+      "previous_log": "results/review_v5/adaptive_ambiguity.log",
+      "exact_stdout_match": true,
+      "json_equal": true
+    },
+    {
+      "name": "adaptive_checks",
+      "arguments": [
+        "tests/test_adaptive_ambiguity.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.06,
+      "log": "results/recheck_20261104/adaptive_checks.log",
+      "previous_log": "results/review_v5/adaptive_checks.log",
+      "exact_stdout_match": true
+    }
+  ],
+  "all_exited_successfully": true
+}

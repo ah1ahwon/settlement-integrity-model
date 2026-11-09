@@ -1,3 +1,19 @@
+## 2026-10-16 심사평 보완판 v3
+
+제출용 진입점은 `src/ref3.py`의 `ref_accept`와 `ref_accept_id`입니다. 기존 v2 판정기와 로그는 보존합니다. D는 실제 날짜가 아니라 과거 매출 청구 여부입니다. 기존 로그의 청구일자 표기는 이 이진 상태를 가리킵니다.
+
+v3는 레코드 종류·길이·양의 정수 금액·식별자, 관측된 원장/취소 목록과 Z·X2 정합성을 검사합니다. 관측하지 않는 필드는 검사하지 않으며 X2가 정하는 Z는 계산합니다. 잘못된 입력은 False를 반환합니다. 특정 EDI 바이트 파서, 운영 시스템 또는 사고 원인 판별기는 아닙니다.
+
+```bash
+export PYTHONPATH=src:tests:experiments:legacy
+export PYTHONHASHSEED=0
+python3 tests/test_ref3_boundary.py
+JUDGE=ref3 python3 tests/indep_check.py
+python3 experiments/review_v3.py --output results/review_v3/results.json
+```
+
+실행 전 출력 디렉터리를 생성하십시오. 보완 실험은 단일 요인 통제, 전역 예산 결합, A5 단일 거래 대체 비용 규칙, 시드 5종 각 1,000원본, 원본 파일 단위 부트스트랩 2,000회, 실행시간 9회 중앙값, 모순 관측 검사입니다. 선택된 통제 사례의 차이 비율은 현실 발생률이 아닙니다. 소스와 결과는 `results/review_v3/manifest.json`의 SHA-256으로 고정합니다. 이 보완판은 기준 커밋 이후 로컬 변경이며 원격 저장소에 게시되었다고 간주하면 안 됩니다.
+
 # card-billing-integrity — 재현성 패키지
 
 학위논문 「카드 청구 데이터의 변조 식별 가능성 분석: 신뢰정보와 정상 청구 지연 조건을 중심으로」의 합성 실험·검증 코드와 결과 로그.

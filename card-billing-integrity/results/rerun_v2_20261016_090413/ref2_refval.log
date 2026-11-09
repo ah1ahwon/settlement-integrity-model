@@ -1,0 +1,4 @@
+MISMATCH ['D', 'L', 'X'] (1, 2, 0) ((10, 1, 6),) {1: {'m': 0, 'amt': 6, 'st': 'U', 'cum': 0, 'ev': [(2, False)]}} ref False brute True
+MISMATCH ['B', 'D', 'L', 'X'] (1, 1, 0) ((10, 1, 6),) {1: {'m': 0, 'amt': 6, 'st': 'U', 'cum': 0, 'ev': [(2, False)]}} ref False brute True
+MISMATCH ['D', 'L', 'X'] (2, 0, 2) ((10, 1, 5), (10, 2, 8)) {1: {'m': 0, 'amt': 5, 'st': 'U', 'cum': 0, 'ev': [(2, False)]}, 2: {'m': 0, 'amt': 8, 'st': 'C', 'cum': 4, 'ev': [(1, True), (3, True)]}} ref False brute True
+독립 열거 대조(관측 K에 취소 목록 포함 조합 포함): 85624 건, 불일치 3036
