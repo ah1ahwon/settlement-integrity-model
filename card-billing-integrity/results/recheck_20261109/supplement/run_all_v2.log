@@ -1,0 +1,26 @@
+indep_check_ref2 exit=0   24.0s
+indep_check_ref exit=0   24.0s
+id_equivalence exit=0    0.4s
+id_chain       exit=0    1.2s
+sensitivity    exit=0   48.8s
+ref2_final_ref exit=0   46.8s
+ref2_refeval   exit=0   31.0s
+ref2_thm2      exit=0   12.5s
+ref2_casecmp   exit=0    3.6s
+ref2_budget_only exit=0   12.7s
+ref2_refval    exit=0    3.8s
+prop33b        exit=0    0.9s
+coupling_219   exit=0    2.5s
+ref2id_consistency exit=0    0.7s
+sensitivity_s4 exit=0   24.0s
+s4_breakdown   exit=0    2.2s
+falseblock_cause exit=0    0.5s
+coupling_219_bounds exit=0    4.6s
+s4_conditional exit=0    3.9s
+conditional_detection exit=0   47.3s
+coupling_219_multiplicity exit=0    3.8s
+ref2_cex       exit=0    0.2s
+ledger_invariance exit=0    2.0s
+ref2id_cex     exit=0    0.1s
+x2_error_cause exit=0    2.6s
+diff 보고서: results/diff_v2_20261109_221711.txt | 차이 있는 로그 0

@@ -1,0 +1,168 @@
+{
+  "date": "2026-11-09T22:09:33+09:00",
+  "scope": "same-computer full re-execution of Appendix B (v2 set and supplements v3-v5) in a fresh copy of the working tree; not cross-machine validation",
+  "python": "3.11.1",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "hash_seed": 0,
+  "base_commit": "5b43918b168e3cd6b675f98e18245f7a773fc3e9",
+  "pre_run_check": "SHA-256 of all 229 files listed in results/review_v3, review_v4 and review_v5 manifest.json matched the sources before execution",
+  "commands": [
+    {
+      "name": "boundary",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:legacy python3 tests/test_ref3_boundary.py",
+      "log": "results/recheck_20261109/supplement/boundary.log",
+      "exit_code": 0,
+      "seconds": 0,
+      "previous_log": "results/review_v3/boundary.log",
+      "differing_lines": 0
+    },
+    {
+      "name": "independent",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:legacy JUDGE=ref3 python3 tests/indep_check.py",
+      "log": "results/recheck_20261109/supplement/independent.log",
+      "exit_code": 0,
+      "seconds": 31,
+      "previous_log": "results/review_v3/independent.log",
+      "differing_lines": 0
+    },
+    {
+      "name": "id_equivalence",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:legacy python3 tests/test_ref3_id_equivalence.py",
+      "log": "results/recheck_20261109/supplement/id_equivalence.log",
+      "exit_code": 0,
+      "seconds": 8,
+      "previous_log": "results/review_v3/id_equivalence.log",
+      "differing_lines": 0
+    },
+    {
+      "name": "review_v3",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:legacy python3 experiments/review_v3.py --output <new>/review_v3_results.json",
+      "log": "results/recheck_20261109/supplement/review_v3.log",
+      "exit_code": 0,
+      "seconds": 26
+    },
+    {
+      "name": "deletion_metrics",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 experiments/deletion_metrics.py",
+      "log": "results/recheck_20261109/supplement/deletion_metrics.log",
+      "exit_code": 0,
+      "seconds": 2,
+      "previous_log": "results/review_v4/deletion_metrics.log",
+      "differing_lines": 0
+    },
+    {
+      "name": "s5_ambiguity",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 experiments/s5_ambiguity.py --output <new>/s5_ambiguity.json",
+      "log": "results/recheck_20261109/supplement/s5_ambiguity.log",
+      "exit_code": 0,
+      "seconds": 100,
+      "previous_log": "results/review_v4/s5_ambiguity.log",
+      "differing_lines": 2,
+      "difference_note": "output path line only"
+    },
+    {
+      "name": "joint_deletion",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 experiments/joint_deletion.py",
+      "log": "results/recheck_20261109/supplement/joint_deletion.log",
+      "exit_code": 0,
+      "seconds": 10,
+      "previous_log": "results/review_v4/joint_deletion.log",
+      "differing_lines": 0
+    },
+    {
+      "name": "joint_deletion_boundary",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 tests/test_joint_deletion_boundary.py",
+      "log": "results/recheck_20261109/supplement/joint_deletion_boundary.log",
+      "exit_code": 0,
+      "seconds": 12,
+      "previous_log": "results/review_v4/joint_deletion_boundary.log",
+      "differing_lines": 0
+    },
+    {
+      "name": "deletion_budget",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 tests/test_deletion_budget.py",
+      "log": "results/recheck_20261109/supplement/deletion_budget.log",
+      "exit_code": 0,
+      "seconds": 236,
+      "previous_log": "results/review_v4/deletion_budget.log",
+      "differing_lines": 0
+    },
+    {
+      "name": "adaptive_ambiguity",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 experiments/adaptive_ambiguity.py --output <new>/adaptive_ambiguity.json",
+      "log": "results/recheck_20261109/supplement/adaptive_ambiguity.log",
+      "exit_code": 0,
+      "seconds": 33,
+      "previous_log": "results/review_v5/adaptive_ambiguity.log",
+      "differing_lines": 0
+    },
+    {
+      "name": "adaptive_checks",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 tests/test_adaptive_ambiguity.py",
+      "log": "results/recheck_20261109/supplement/adaptive_checks.log",
+      "exit_code": 0,
+      "seconds": 0,
+      "previous_log": "results/review_v5/adaptive_checks.log",
+      "differing_lines": 0
+    },
+    {
+      "name": "adaptive_checks_regen",
+      "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 tests/test_adaptive_ambiguity.py  # stored S5/v5 JSON temporarily replaced by regenerated JSON in the working copy",
+      "log": "results/recheck_20261109/supplement/adaptive_checks_regen.log",
+      "exit_code": 0,
+      "seconds": 0,
+      "previous_log": "results/review_v5/adaptive_checks.log",
+      "differing_lines": 0
+    },
+    {
+      "name": "run_all_v2",
+      "command": "python3 run_all.py --set v2 --rerun",
+      "log": "results/recheck_20261109/supplement/run_all_v2.log",
+      "exit_code": 0,
+      "seconds": 103
+    }
+  ],
+  "v2": {
+    "rerun_folder": "results/recheck_20261109/v2_rerun",
+    "diff_report": "results/recheck_20261109/v2_diff.txt",
+    "logs_differing_from_baseline_v2": 0,
+    "abnormal_exits": 0,
+    "reported_numbers_check": "results/recheck_20261109/v2_reported_numbers_check.txt",
+    "reported_numbers_pass": 60,
+    "reported_numbers_fail": 0
+  },
+  "json_comparison": {
+    "s5_ambiguity.json vs review_v4/s5_ambiguity.json": true,
+    "adaptive_ambiguity.json vs review_v5/adaptive_ambiguity.json": true,
+    "review_v3_results.json vs review_v3/results.json": {
+      "differing_paths": 25,
+      "all_under": [
+        "performance"
+      ],
+      "note": "performance timings and recorded Python version only"
+    }
+  },
+  "log_edits": "In supplement/run_all_v2.log the absolute temporary path of the diff report (1 occurrence) was replaced with a relative results/ path; no other edits.",
+  "source_sha256": {
+    "src/ref3.py": "30c54a054a6b325ceee5fa38ecec1147cb098cca23b55ddb82ebd4e465dac4dd",
+    "src/ref2.py": "37386b307c1df22859d66246923ba50c6fc9dabbbcfafae6714474c2d9c1587d",
+    "src/ref2id.py": "a00a00b191546bb1ac7599f85f19d16ba0fa5bf639b344b245ee23c960366293",
+    "src/m2.py": "1c2dac2eca7e76df3dbc232ffca224893e7e6ed332fa2b21b305d905fe1cc477",
+    "src/m4.py": "d90a781d981f4b3024a3064bfa9d0d0204ade7476b2bd2699805f9df4fd9d0a3",
+    "src/run9.py": "67118f6b3bdf5e8d53de55abb6ea7c08e671f205f4a43630adce3d8e8578723e",
+    "run_all.py": "a9634e58bdf762c2bdffdb966a4b17392f7f8ab6da877cca0b12fdcc82a7fcc6",
+    "tests/check_reported_numbers_v2.py": "1d3ec23765109df957e620d7d7c21103b04c71047970820892d113831c40254d",
+    "experiments/review_v3.py": "cf61076fcc800724c1157604b877b43eba844e7585d88f6d3a77ec9eb7ecc0cf",
+    "experiments/deletion_metrics.py": "850586462f62e7aed2e26171daf2f720479752781531eabfaa24bb01a272cc15",
+    "experiments/s5_ambiguity.py": "9b41ff81e710f8101d491d3ce649015353273ba07984fee5d14865292591357e",
+    "experiments/joint_deletion.py": "8bf4c63548fcfc1d3cec79cc916fbef29841201540ba03de54400151756237f5",
+    "experiments/adaptive_ambiguity.py": "12bc9f957e74a8eee1cf92311533a321ba0c7be4fc80e669fdd2c72163bef29a",
+    "tests/test_ref3_boundary.py": "df2b346f5982084fb7efb0415e0ee064827f1c9842bc5688815f38b157ca71a3",
+    "tests/indep_check.py": "cbbbc593925cacc67009968f7a513ebf6f9f2e994455f48a7a52858c22dc41ec",
+    "tests/test_ref3_id_equivalence.py": "3cc0142bceb16851f061745340c1252455025f097499a398f6e676aaae4092e5",
+    "tests/test_deletion_budget.py": "7f961565dc55428f3913b8ab7a6d3692c81e44daf25d823089bd7df3d995cd3f",
+    "tests/test_joint_deletion_boundary.py": "6480d86fc69f3060bc936e6b0d90cac4c12d64442bbbf7d3d9d96e7ee949707e",
+    "tests/test_adaptive_ambiguity.py": "04b6127956014ae3dc0ba50c4441a2848f2203e74a97188680dc61b0255cee8f"
+  },
+  "all_exited_successfully": true
+}

@@ -1,0 +1,2904 @@
+{
+  "controls": {
+    "single_factor": [
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 0,
+        "sent": [],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 0,
+        "sent": [
+          0
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 0,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 1,
+        "sent": [],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 1,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 1,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 2,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 2,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 2,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 3,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 3,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 1,
+        "last": 2,
+        "cc": 3,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 0,
+        "sent": [],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 0,
+        "sent": [
+          0
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 0,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 1,
+        "sent": [],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 1,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 1,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 2,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 2,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 2,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 3,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 3,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 1,
+        "last": 3,
+        "cc": 3,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 0,
+        "sent": [],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 0,
+        "sent": [
+          0
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 0,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 1,
+        "sent": [],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 1,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 1,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 2,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 2,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 2,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 3,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 3,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 2,
+        "last": 2,
+        "cc": 3,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 0,
+        "sent": [],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 0,
+        "sent": [
+          0
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 0,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 1,
+        "sent": [],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 1,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 1,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 2,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 2,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 2,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 3,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 3,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 2,
+        "last": 3,
+        "cc": 3,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 0,
+        "sent": [],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 0,
+        "sent": [
+          0
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 0,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 1,
+        "sent": [],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 1,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 1,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 2,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 2,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 2,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 3,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 3,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 5,
+        "last": 2,
+        "cc": 3,
+        "sent": [
+          2
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 0,
+        "sent": [],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 0,
+        "sent": [
+          0
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 0,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 1,
+        "sent": [],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 1,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 1,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 2,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 2,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 2,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 3,
+        "sent": [],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 3,
+        "sent": [
+          0
+        ],
+        "X1": true,
+        "X2": true
+      },
+      {
+        "scale": 5,
+        "last": 3,
+        "cc": 3,
+        "sent": [
+          2
+        ],
+        "X1": false,
+        "X2": false
+      }
+    ],
+    "coupling": [
+      {
+        "cc": 0,
+        "full": [
+          false,
+          false
+        ],
+        "individual": [
+          false,
+          false
+        ]
+      },
+      {
+        "cc": 1,
+        "full": [
+          false,
+          false
+        ],
+        "individual": [
+          true,
+          false
+        ]
+      },
+      {
+        "cc": 2,
+        "full": [
+          true,
+          false
+        ],
+        "individual": [
+          true,
+          true
+        ]
+      },
+      {
+        "cc": 3,
+        "full": [
+          true,
+          false
+        ],
+        "individual": [
+          true,
+          true
+        ]
+      },
+      {
+        "cc": 4,
+        "full": [
+          true,
+          true
+        ],
+        "individual": [
+          true,
+          true
+        ]
+      }
+    ],
+    "id_replay": {
+      "amount": true,
+      "event_id": false
+    }
+  },
+  "A5": {
+    "cases": 120,
+    "different": 15,
+    "rows": [
+      {
+        "n": 0,
+        "cs": 0,
+        "cc": 0,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 0,
+        "cs": 0,
+        "cc": 0,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 0,
+        "cc": 1,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 0,
+        "cs": 0,
+        "cc": 1,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 0,
+        "cc": 2,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 0,
+        "cs": 0,
+        "cc": 2,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 0,
+        "cc": 3,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 0,
+        "cs": 0,
+        "cc": 3,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 0,
+        "cc": 4,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 0,
+        "cs": 0,
+        "cc": 4,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 1,
+        "cc": 0,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 1,
+        "cc": 0,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 1,
+        "cc": 1,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 1,
+        "cc": 1,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 1,
+        "cc": 2,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 1,
+        "cc": 2,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 1,
+        "cc": 3,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 1,
+        "cc": 3,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 1,
+        "cc": 4,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 0,
+        "cs": 1,
+        "cc": 4,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 0,
+        "cc": 0,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 1,
+        "cs": 0,
+        "cc": 0,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 1,
+        "cs": 0,
+        "cc": 1,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 1,
+        "cs": 0,
+        "cc": 1,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 0,
+        "cc": 2,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 1,
+        "cs": 0,
+        "cc": 2,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 0,
+        "cc": 3,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 1,
+        "cs": 0,
+        "cc": 3,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 0,
+        "cc": 4,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 1,
+        "cs": 0,
+        "cc": 4,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 1,
+        "cc": 0,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 1,
+        "cs": 1,
+        "cc": 0,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 1,
+        "cs": 1,
+        "cc": 1,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 1,
+        "cc": 1,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 1,
+        "cc": 2,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 1,
+        "cc": 2,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 1,
+        "cc": 3,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 1,
+        "cc": 3,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 1,
+        "cc": 4,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 1,
+        "cs": 1,
+        "cc": 4,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 2,
+        "cs": 0,
+        "cc": 0,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 0,
+        "cc": 0,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 0,
+        "cc": 1,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 0,
+        "cc": 1,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 0,
+        "cc": 2,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 0,
+        "cc": 2,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 2,
+        "cs": 0,
+        "cc": 3,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 0,
+        "cc": 3,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 2,
+        "cs": 0,
+        "cc": 4,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 0,
+        "cc": 4,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 2,
+        "cs": 1,
+        "cc": 0,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 1,
+        "cc": 0,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 1,
+        "cc": 1,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 1,
+        "cc": 1,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 2,
+        "cs": 1,
+        "cc": 2,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 2,
+        "cs": 1,
+        "cc": 2,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 2,
+        "cs": 1,
+        "cc": 3,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 2,
+        "cs": 1,
+        "cc": 3,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 2,
+        "cs": 1,
+        "cc": 4,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 2,
+        "cs": 1,
+        "cc": 4,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 3,
+        "cs": 0,
+        "cc": 0,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 0,
+        "cc": 0,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 0,
+        "cc": 1,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 0,
+        "cc": 1,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 0,
+        "cc": 2,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 0,
+        "cc": 2,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 0,
+        "cc": 3,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 0,
+        "cc": 3,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 3,
+        "cs": 0,
+        "cc": 4,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 0,
+        "cc": 4,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 3,
+        "cs": 1,
+        "cc": 0,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 1,
+        "cc": 0,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 1,
+        "cc": 1,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 1,
+        "cc": 1,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 1,
+        "cc": 2,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 1,
+        "cc": 2,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 3,
+        "cs": 1,
+        "cc": 3,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 3,
+        "cs": 1,
+        "cc": 3,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 3,
+        "cs": 1,
+        "cc": 4,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 3,
+        "cs": 1,
+        "cc": 4,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 4,
+        "cs": 0,
+        "cc": 0,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 0,
+        "cc": 0,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 0,
+        "cc": 1,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 0,
+        "cc": 1,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 0,
+        "cc": 2,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 0,
+        "cc": 2,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 0,
+        "cc": 3,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 0,
+        "cc": 3,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 0,
+        "cc": 4,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 0,
+        "cc": 4,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 4,
+        "cs": 1,
+        "cc": 0,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 1,
+        "cc": 0,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 1,
+        "cc": 1,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 1,
+        "cc": 1,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 1,
+        "cc": 2,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 1,
+        "cc": 2,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 1,
+        "cc": 3,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 1,
+        "cc": 3,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 4,
+        "cs": 1,
+        "cc": 4,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 4,
+        "cs": 1,
+        "cc": 4,
+        "sent": true,
+        "A5": true,
+        "count_all_pending": true
+      },
+      {
+        "n": 5,
+        "cs": 0,
+        "cc": 0,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 0,
+        "cc": 0,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 0,
+        "cc": 1,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 0,
+        "cc": 1,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 0,
+        "cc": 2,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 0,
+        "cc": 2,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 0,
+        "cc": 3,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 0,
+        "cc": 3,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 0,
+        "cc": 4,
+        "sent": false,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 0,
+        "cc": 4,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 1,
+        "cc": 0,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 1,
+        "cc": 0,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 1,
+        "cc": 1,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 1,
+        "cc": 1,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 1,
+        "cc": 2,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 1,
+        "cc": 2,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 1,
+        "cc": 3,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 1,
+        "cc": 3,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 1,
+        "cc": 4,
+        "sent": false,
+        "A5": true,
+        "count_all_pending": false
+      },
+      {
+        "n": 5,
+        "cs": 1,
+        "cc": 4,
+        "sent": true,
+        "A5": false,
+        "count_all_pending": false
+      }
+    ]
+  },
+  "replication": {
+    "seeds": [
+      {
+        "seed": 2024,
+        "files": 1000,
+        "attacks": 42668,
+        "unmodified_rejected": 3,
+        "assumption_violations": 3,
+        "X1_X2_differences": 0,
+        "macro_C": 89.18809320274752,
+        "types": {
+          "취소 삭제": [
+            164,
+            5652
+          ],
+          "금액 변경(20)": [
+            5650,
+            5652
+          ],
+          "구분 변경(10↔20)": [
+            10461,
+            10461
+          ],
+          "거래 삭제": [
+            2745,
+            4809
+          ],
+          "금액 변경(10)": [
+            4809,
+            4809
+          ],
+          "거래 분할(새 승인번호)": [
+            4809,
+            4809
+          ],
+          "중복 청구 삽입(10)": [
+            997,
+            997
+          ],
+          "위조 취소 삽입(한도 이내)": [
+            992,
+            997
+          ],
+          "위조 취소 삽입(한도 초과)": [
+            997,
+            997
+          ],
+          "유령 거래 삽입": [
+            997,
+            997
+          ],
+          "타 가맹점 거래 삽입": [
+            997,
+            997
+          ],
+          "가맹점번호 치환": [
+            997,
+            997
+          ],
+          "취소 재전송(청구완료)": [
+            379,
+            379
+          ]
+        },
+        "all_attacks": {
+          "취소 삭제": [
+            179,
+            5667
+          ],
+          "금액 변경(20)": [
+            5665,
+            5667
+          ],
+          "구분 변경(10↔20)": [
+            10489,
+            10489
+          ],
+          "거래 삭제": [
+            2755,
+            4822
+          ],
+          "금액 변경(10)": [
+            4822,
+            4822
+          ],
+          "거래 분할(새 승인번호)": [
+            4822,
+            4822
+          ],
+          "중복 청구 삽입(10)": [
+            1000,
+            1000
+          ],
+          "위조 취소 삽입(한도 이내)": [
+            995,
+            1000
+          ],
+          "위조 취소 삽입(한도 초과)": [
+            1000,
+            1000
+          ],
+          "유령 거래 삽입": [
+            1000,
+            1000
+          ],
+          "타 가맹점 거래 삽입": [
+            1000,
+            1000
+          ],
+          "가맹점번호 치환": [
+            1000,
+            1000
+          ],
+          "취소 재전송(청구완료)": [
+            379,
+            379
+          ]
+        }
+      },
+      {
+        "seed": 2025,
+        "files": 1000,
+        "attacks": 42110,
+        "unmodified_rejected": 4,
+        "assumption_violations": 4,
+        "X1_X2_differences": 0,
+        "macro_C": 89.09321126090595,
+        "types": {
+          "취소 삭제": [
+            98,
+            5571
+          ],
+          "금액 변경(20)": [
+            5571,
+            5571
+          ],
+          "구분 변경(10↔20)": [
+            10294,
+            10294
+          ],
+          "거래 삭제": [
+            2671,
+            4723
+          ],
+          "금액 변경(10)": [
+            4723,
+            4723
+          ],
+          "거래 분할(새 승인번호)": [
+            4723,
+            4723
+          ],
+          "중복 청구 삽입(10)": [
+            996,
+            996
+          ],
+          "위조 취소 삽입(한도 이내)": [
+            995,
+            996
+          ],
+          "위조 취소 삽입(한도 초과)": [
+            996,
+            996
+          ],
+          "유령 거래 삽입": [
+            996,
+            996
+          ],
+          "타 가맹점 거래 삽입": [
+            996,
+            996
+          ],
+          "가맹점번호 치환": [
+            996,
+            996
+          ],
+          "취소 재전송(청구완료)": [
+            386,
+            386
+          ]
+        },
+        "all_attacks": {
+          "취소 삭제": [
+            113,
+            5586
+          ],
+          "금액 변경(20)": [
+            5586,
+            5586
+          ],
+          "구분 변경(10↔20)": [
+            10327,
+            10327
+          ],
+          "거래 삭제": [
+            2685,
+            4741
+          ],
+          "금액 변경(10)": [
+            4741,
+            4741
+          ],
+          "거래 분할(새 승인번호)": [
+            4741,
+            4741
+          ],
+          "중복 청구 삽입(10)": [
+            1000,
+            1000
+          ],
+          "위조 취소 삽입(한도 이내)": [
+            999,
+            1000
+          ],
+          "위조 취소 삽입(한도 초과)": [
+            1000,
+            1000
+          ],
+          "유령 거래 삽입": [
+            1000,
+            1000
+          ],
+          "타 가맹점 거래 삽입": [
+            1000,
+            1000
+          ],
+          "가맹점번호 치환": [
+            1000,
+            1000
+          ],
+          "취소 재전송(청구완료)": [
+            388,
+            388
+          ]
+        }
+      },
+      {
+        "seed": 2026,
+        "files": 1000,
+        "attacks": 42003,
+        "unmodified_rejected": 5,
+        "assumption_violations": 5,
+        "X1_X2_differences": 2,
+        "macro_C": 89.0445268601163,
+        "types": {
+          "거래 삭제": [
+            2632,
+            4737
+          ],
+          "금액 변경(10)": [
+            4737,
+            4737
+          ],
+          "구분 변경(10↔20)": [
+            10229,
+            10229
+          ],
+          "거래 분할(새 승인번호)": [
+            4737,
+            4737
+          ],
+          "취소 삭제": [
+            136,
+            5492
+          ],
+          "금액 변경(20)": [
+            5492,
+            5492
+          ],
+          "중복 청구 삽입(10)": [
+            995,
+            995
+          ],
+          "위조 취소 삽입(한도 이내)": [
+            993,
+            995
+          ],
+          "위조 취소 삽입(한도 초과)": [
+            995,
+            995
+          ],
+          "유령 거래 삽입": [
+            995,
+            995
+          ],
+          "타 가맹점 거래 삽입": [
+            995,
+            995
+          ],
+          "가맹점번호 치환": [
+            995,
+            995
+          ],
+          "취소 재전송(청구완료)": [
+            385,
+            386
+          ]
+        },
+        "all_attacks": {
+          "거래 삭제": [
+            2657,
+            4764
+          ],
+          "금액 변경(10)": [
+            4764,
+            4764
+          ],
+          "구분 변경(10↔20)": [
+            10284,
+            10284
+          ],
+          "거래 분할(새 승인번호)": [
+            4764,
+            4764
+          ],
+          "취소 삭제": [
+            164,
+            5520
+          ],
+          "금액 변경(20)": [
+            5520,
+            5520
+          ],
+          "중복 청구 삽입(10)": [
+            1000,
+            1000
+          ],
+          "위조 취소 삽입(한도 이내)": [
+            998,
+            1000
+          ],
+          "위조 취소 삽입(한도 초과)": [
+            1000,
+            1000
+          ],
+          "유령 거래 삽입": [
+            1000,
+            1000
+          ],
+          "타 가맹점 거래 삽입": [
+            1000,
+            1000
+          ],
+          "가맹점번호 치환": [
+            1000,
+            1000
+          ],
+          "취소 재전송(청구완료)": [
+            386,
+            387
+          ]
+        }
+      },
+      {
+        "seed": 41,
+        "files": 1000,
+        "attacks": 41785,
+        "unmodified_rejected": 5,
+        "assumption_violations": 5,
+        "X1_X2_differences": 0,
+        "macro_C": 88.85835818991094,
+        "types": {
+          "거래 삭제": [
+            2604,
+            4761
+          ],
+          "금액 변경(10)": [
+            4761,
+            4761
+          ],
+          "구분 변경(10↔20)": [
+            10169,
+            10169
+          ],
+          "거래 분할(새 승인번호)": [
+            4761,
+            4761
+          ],
+          "취소 삭제": [
+            52,
+            5408
+          ],
+          "금액 변경(20)": [
+            5407,
+            5408
+          ],
+          "중복 청구 삽입(10)": [
+            995,
+            995
+          ],
+          "위조 취소 삽입(한도 이내)": [
+            993,
+            995
+          ],
+          "위조 취소 삽입(한도 초과)": [
+            995,
+            995
+          ],
+          "유령 거래 삽입": [
+            995,
+            995
+          ],
+          "타 가맹점 거래 삽입": [
+            995,
+            995
+          ],
+          "가맹점번호 치환": [
+            995,
+            995
+          ],
+          "취소 재전송(청구완료)": [
+            359,
+            360
+          ]
+        },
+        "all_attacks": {
+          "거래 삭제": [
+            2623,
+            4784
+          ],
+          "금액 변경(10)": [
+            4784,
+            4784
+          ],
+          "구분 변경(10↔20)": [
+            10213,
+            10213
+          ],
+          "거래 분할(새 승인번호)": [
+            4784,
+            4784
+          ],
+          "취소 삭제": [
+            73,
+            5429
+          ],
+          "금액 변경(20)": [
+            5428,
+            5429
+          ],
+          "중복 청구 삽입(10)": [
+            1000,
+            1000
+          ],
+          "위조 취소 삽입(한도 이내)": [
+            998,
+            1000
+          ],
+          "위조 취소 삽입(한도 초과)": [
+            1000,
+            1000
+          ],
+          "유령 거래 삽입": [
+            1000,
+            1000
+          ],
+          "타 가맹점 거래 삽입": [
+            1000,
+            1000
+          ],
+          "가맹점번호 치환": [
+            1000,
+            1000
+          ],
+          "취소 재전송(청구완료)": [
+            361,
+            362
+          ]
+        }
+      },
+      {
+        "seed": 777,
+        "files": 1000,
+        "attacks": 42555,
+        "unmodified_rejected": 4,
+        "assumption_violations": 4,
+        "X1_X2_differences": 0,
+        "macro_C": 89.05032787784734,
+        "types": {
+          "거래 삭제": [
+            2687,
+            4790
+          ],
+          "금액 변경(10)": [
+            4790,
+            4790
+          ],
+          "구분 변경(10↔20)": [
+            10421,
+            10421
+          ],
+          "거래 분할(새 승인번호)": [
+            4790,
+            4790
+          ],
+          "취소 삭제": [
+            127,
+            5631
+          ],
+          "금액 변경(20)": [
+            5630,
+            5631
+          ],
+          "중복 청구 삽입(10)": [
+            996,
+            996
+          ],
+          "위조 취소 삽입(한도 이내)": [
+            992,
+            996
+          ],
+          "위조 취소 삽입(한도 초과)": [
+            996,
+            996
+          ],
+          "유령 거래 삽입": [
+            996,
+            996
+          ],
+          "타 가맹점 거래 삽입": [
+            996,
+            996
+          ],
+          "가맹점번호 치환": [
+            996,
+            996
+          ],
+          "취소 재전송(청구완료)": [
+            359,
+            360
+          ]
+        },
+        "all_attacks": {
+          "거래 삭제": [
+            2703,
+            4808
+          ],
+          "금액 변경(10)": [
+            4808,
+            4808
+          ],
+          "구분 변경(10↔20)": [
+            10461,
+            10461
+          ],
+          "거래 분할(새 승인번호)": [
+            4808,
+            4808
+          ],
+          "취소 삭제": [
+            149,
+            5653
+          ],
+          "금액 변경(20)": [
+            5652,
+            5653
+          ],
+          "중복 청구 삽입(10)": [
+            1000,
+            1000
+          ],
+          "위조 취소 삽입(한도 이내)": [
+            996,
+            1000
+          ],
+          "위조 취소 삽입(한도 초과)": [
+            1000,
+            1000
+          ],
+          "유령 거래 삽입": [
+            1000,
+            1000
+          ],
+          "타 가맹점 거래 삽입": [
+            1000,
+            1000
+          ],
+          "가맹점번호 치환": [
+            1000,
+            1000
+          ],
+          "취소 재전송(청구완료)": [
+            363,
+            364
+          ]
+        }
+      }
+    ],
+    "v2_v3_attack_comparisons": 422242,
+    "X1_X2_differences": 2,
+    "difference_examples": [
+      {
+        "seed": 2026,
+        "source_index": 30,
+        "kind": "취소 삭제",
+        "ledger": {
+          "47": {
+            "m": 0,
+            "amt": 100,
+            "st": "U",
+            "cum": 0,
+            "ev": [
+              [
+                98,
+                false
+              ]
+            ]
+          },
+          "19": {
+            "m": 0,
+            "amt": 197,
+            "st": "U",
+            "cum": 0,
+            "ev": [
+              [
+                166,
+                false
+              ]
+            ]
+          },
+          "52": {
+            "m": 0,
+            "amt": 123,
+            "st": "U",
+            "cum": 0,
+            "ev": [
+              [
+                101,
+                false
+              ]
+            ]
+          },
+          "31": {
+            "m": 0,
+            "amt": 71,
+            "st": "U",
+            "cum": 0,
+            "ev": []
+          },
+          "90": {
+            "m": 0,
+            "amt": 11,
+            "st": "C",
+            "cum": 7,
+            "ev": [
+              [
+                4,
+                true
+              ],
+              [
+                3,
+                true
+              ],
+              [
+                2,
+                false
+              ],
+              [
+                2,
+                false
+              ]
+            ]
+          },
+          "93": {
+            "m": 0,
+            "amt": 61,
+            "st": "C",
+            "cum": 0,
+            "ev": [
+              [
+                43,
+                false
+              ],
+              [
+                9,
+                false
+              ]
+            ]
+          },
+          "41": {
+            "m": 0,
+            "amt": 86,
+            "st": "C",
+            "cum": 0,
+            "ev": [
+              [
+                75,
+                false
+              ]
+            ]
+          },
+          "22": {
+            "m": 1,
+            "amt": 145,
+            "st": "U",
+            "cum": 0,
+            "ev": []
+          },
+          "96": {
+            "m": 1,
+            "amt": 190,
+            "st": "U",
+            "cum": 0,
+            "ev": []
+          }
+        },
+        "source": [
+          0,
+          [
+            [
+              10,
+              47,
+              100
+            ],
+            [
+              10,
+              52,
+              123
+            ],
+            [
+              10,
+              19,
+              197
+            ],
+            [
+              20,
+              41,
+              75
+            ],
+            [
+              20,
+              93,
+              9
+            ],
+            [
+              20,
+              19,
+              166
+            ],
+            [
+              20,
+              90,
+              2
+            ],
+            [
+              20,
+              47,
+              98
+            ]
+          ]
+        ],
+        "attack": [
+          0,
+          [
+            [
+              10,
+              47,
+              100
+            ],
+            [
+              10,
+              52,
+              123
+            ],
+            [
+              10,
+              19,
+              197
+            ],
+            [
+              20,
+              41,
+              75
+            ],
+            [
+              20,
+              93,
+              9
+            ],
+            [
+              20,
+              19,
+              166
+            ],
+            [
+              20,
+              47,
+              98
+            ]
+          ]
+        ],
+        "X1": true,
+        "X2": false
+      },
+      {
+        "seed": 2026,
+        "source_index": 778,
+        "kind": "취소 재전송(청구완료)",
+        "ledger": {
+          "24": {
+            "m": 0,
+            "amt": 165,
+            "st": "U",
+            "cum": 0,
+            "ev": [
+              [
+                30,
+                false
+              ]
+            ]
+          },
+          "39": {
+            "m": 0,
+            "amt": 60,
+            "st": "U",
+            "cum": 0,
+            "ev": [
+              [
+                21,
+                false
+              ]
+            ]
+          },
+          "63": {
+            "m": 0,
+            "amt": 23,
+            "st": "U",
+            "cum": 0,
+            "ev": [
+              [
+                2,
+                false
+              ]
+            ]
+          },
+          "17": {
+            "m": 0,
+            "amt": 176,
+            "st": "U",
+            "cum": 0,
+            "ev": []
+          },
+          "43": {
+            "m": 0,
+            "amt": 152,
+            "st": "U",
+            "cum": 0,
+            "ev": []
+          },
+          "38": {
+            "m": 0,
+            "amt": 15,
+            "st": "U",
+            "cum": 0,
+            "ev": []
+          },
+          "44": {
+            "m": 0,
+            "amt": 35,
+            "st": "C",
+            "cum": 12,
+            "ev": [
+              [
+                12,
+                true
+              ],
+              [
+                6,
+                false
+              ],
+              [
+                6,
+                false
+              ]
+            ]
+          },
+          "10": {
+            "m": 0,
+            "amt": 200,
+            "st": "C",
+            "cum": 106,
+            "ev": [
+              [
+                106,
+                true
+              ],
+              [
+                54,
+                false
+              ],
+              [
+                37,
+                false
+              ]
+            ]
+          },
+          "69": {
+            "m": 0,
+            "amt": 187,
+            "st": "C",
+            "cum": 0,
+            "ev": [
+              [
+                94,
+                false
+              ]
+            ]
+          },
+          "25": {
+            "m": 1,
+            "amt": 23,
+            "st": "U",
+            "cum": 0,
+            "ev": []
+          },
+          "26": {
+            "m": 1,
+            "amt": 146,
+            "st": "C",
+            "cum": 0,
+            "ev": []
+          }
+        },
+        "source": [
+          0,
+          [
+            [
+              20,
+              63,
+              2
+            ],
+            [
+              10,
+              38,
+              15
+            ],
+            [
+              10,
+              63,
+              23
+            ],
+            [
+              10,
+              39,
+              60
+            ],
+            [
+              10,
+              17,
+              176
+            ],
+            [
+              10,
+              24,
+              165
+            ],
+            [
+              20,
+              69,
+              94
+            ],
+            [
+              20,
+              39,
+              21
+            ],
+            [
+              20,
+              24,
+              30
+            ],
+            [
+              20,
+              10,
+              37
+            ],
+            [
+              20,
+              10,
+              54
+            ]
+          ]
+        ],
+        "attack": [
+          0,
+          [
+            [
+              20,
+              63,
+              2
+            ],
+            [
+              10,
+              38,
+              15
+            ],
+            [
+              10,
+              63,
+              23
+            ],
+            [
+              10,
+              39,
+              60
+            ],
+            [
+              10,
+              17,
+              176
+            ],
+            [
+              10,
+              24,
+              165
+            ],
+            [
+              20,
+              69,
+              94
+            ],
+            [
+              20,
+              39,
+              21
+            ],
+            [
+              20,
+              24,
+              30
+            ],
+            [
+              20,
+              10,
+              37
+            ],
+            [
+              20,
+              10,
+              54
+            ],
+            [
+              20,
+              44,
+              12
+            ]
+          ]
+        ],
+        "X1": true,
+        "X2": false
+      }
+    ],
+    "cluster_CI": {
+      "repeats": 2000,
+      "seed": 9162026,
+      "sale": [
+        55.36853685541214,
+        56.63917637019843
+      ],
+      "cancel": [
+        1.6655561764973186,
+        2.5016020123302285
+      ]
+    }
+  },
+  "performance": {
+    "environment": {
+      "python": "3.11.1",
+      "system": "Darwin",
+      "machine": "arm64",
+      "processor": "arm"
+    },
+    "rows": [
+      {
+        "transactions": 10,
+        "records": 10,
+        "events": 30,
+        "K": "LDBZX",
+        "repetitions": 9,
+        "median_ms": 0.10745797771960497,
+        "min_ms": 0.10520895011723042,
+        "max_ms": 0.1153330085799098
+      },
+      {
+        "transactions": 10,
+        "records": 10,
+        "events": 30,
+        "K": "LDBZY",
+        "repetitions": 9,
+        "median_ms": 0.05162495654076338,
+        "min_ms": 0.050709000788629055,
+        "max_ms": 0.05287490785121918
+      },
+      {
+        "transactions": 100,
+        "records": 100,
+        "events": 300,
+        "K": "LDBZX",
+        "repetitions": 9,
+        "median_ms": 1.0064579546451569,
+        "min_ms": 0.9996660519391298,
+        "max_ms": 1.0403749765828252
+      },
+      {
+        "transactions": 100,
+        "records": 100,
+        "events": 300,
+        "K": "LDBZY",
+        "repetitions": 9,
+        "median_ms": 0.47166598960757256,
+        "min_ms": 0.46379107516258955,
+        "max_ms": 0.6170000415295362
+      },
+      {
+        "transactions": 1000,
+        "records": 1000,
+        "events": 3000,
+        "K": "LDBZX",
+        "repetitions": 9,
+        "median_ms": 10.530542000196874,
+        "min_ms": 10.234000044874847,
+        "max_ms": 11.414417065680027
+      },
+      {
+        "transactions": 1000,
+        "records": 1000,
+        "events": 3000,
+        "K": "LDBZY",
+        "repetitions": 9,
+        "median_ms": 4.986459040082991,
+        "min_ms": 4.756374983116984,
+        "max_ms": 6.501374999061227
+      },
+      {
+        "transactions": 5000,
+        "records": 5000,
+        "events": 15000,
+        "K": "LDBZX",
+        "repetitions": 9,
+        "median_ms": 54.20295801013708,
+        "min_ms": 52.418499952182174,
+        "max_ms": 61.99133303016424
+      },
+      {
+        "transactions": 5000,
+        "records": 5000,
+        "events": 15000,
+        "K": "LDBZY",
+        "repetitions": 9,
+        "median_ms": 25.281667010858655,
+        "min_ms": 24.98983300756663,
+        "max_ms": 29.024792020209134
+      }
+    ]
+  },
+  "consistency": [
+    {
+      "mode": "old",
+      "p": 0.05,
+      "inconsistent": 63,
+      "ref3_rejected": 63,
+      "ref2_accepted": 61
+    },
+    {
+      "mode": "old",
+      "p": 0.1,
+      "inconsistent": 130,
+      "ref3_rejected": 130,
+      "ref2_accepted": 124
+    },
+    {
+      "mode": "old",
+      "p": 0.2,
+      "inconsistent": 241,
+      "ref3_rejected": 241,
+      "ref2_accepted": 230
+    },
+    {
+      "mode": "early",
+      "p": 0.05,
+      "inconsistent": 268,
+      "ref3_rejected": 268,
+      "ref2_accepted": 10
+    },
+    {
+      "mode": "early",
+      "p": 0.1,
+      "inconsistent": 459,
+      "ref3_rejected": 459,
+      "ref2_accepted": 8
+    },
+    {
+      "mode": "early",
+      "p": 0.2,
+      "inconsistent": 696,
+      "ref3_rejected": 696,
+      "ref2_accepted": 11
+    }
+  ]
+}
