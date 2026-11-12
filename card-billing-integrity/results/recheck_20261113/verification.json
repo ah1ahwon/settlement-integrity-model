@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-13T07:16:21+09:00",
+  "scope": "same-computer re-execution of the v6 amount experiment (E1/E2) in fresh copies of the working tree (results/private excluded); not cross-machine or independent-team validation",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "hash_seed": 0,
+  "base_commit": "3ff284c95ed0b10cb6c13b0a71e25889201aff3d",
+  "pre_run_check": "SHA-256 of all 55 files listed in results/review_v4, review_v5 and review_v6 manifest.json matched the sources before execution",
+  "command": "PYTHONHASHSEED=0 PYTHONPATH=src:tests:experiments:experiments/legacy python3 experiments/amount_deletion.py --output results/rerun_review/amount_deletion.json",
+  "runs": [
+    {
+      "name": "py311",
+      "python": "3.11.1",
+      "interpreter": "python.org framework build",
+      "exit_code": 0,
+      "seconds": 50,
+      "log_identical_to_review_v6": true,
+      "json_identical_to_review_v6": true,
+      "json_differences": [],
+      "note": null
+    },
+    {
+      "name": "py312",
+      "python": "3.12.14",
+      "interpreter": "standalone build, same interpreter as the 2026-11-04 record",
+      "exit_code": 0,
+      "seconds": 47,
+      "log_identical_to_review_v6": true,
+      "json_identical_to_review_v6": false,
+      "json_differences": [
+        {
+          "field": "/e1/2/greedy_over_random",
+          "review_v6": 1.9141060744770715,
+          "rerun": 1.9141060744770713
+        },
+        {
+          "field": "/e1/3/greedy_over_random",
+          "review_v6": 1.639538413512946,
+          "rerun": 1.639538413512947
+        },
+        {
+          "field": "/e1/4/greedy_over_random",
+          "review_v6": 1.4241265023879852,
+          "rerun": 1.4241265023879843
+        },
+        {
+          "field": "/e1/5/greedy_over_random",
+          "review_v6": 1.2698624517386645,
+          "rerun": 1.2698624517386647
+        }
+      ],
+      "note": "float-only differences <= 8.9e-16 in greedy_over_random; Python 3.12+ changed built-in sum() of floats to compensated summation. Reported value 1.64 (2 decimals) unaffected; all counts and judgments identical."
+    },
+    {
+      "name": "py314",
+      "python": "3.14.8",
+      "interpreter": "Homebrew build",
+      "exit_code": 0,
+      "seconds": 54,
+      "log_identical_to_review_v6": true,
+      "json_identical_to_review_v6": false,
+      "json_differences": [
+        {
+          "field": "/e1/2/greedy_over_random",
+          "review_v6": 1.9141060744770715,
+          "rerun": 1.9141060744770713
+        },
+        {
+          "field": "/e1/3/greedy_over_random",
+          "review_v6": 1.639538413512946,
+          "rerun": 1.639538413512947
+        },
+        {
+          "field": "/e1/4/greedy_over_random",
+          "review_v6": 1.4241265023879852,
+          "rerun": 1.4241265023879843
+        },
+        {
+          "field": "/e1/5/greedy_over_random",
+          "review_v6": 1.2698624517386645,
+          "rerun": 1.2698624517386647
+        }
+      ],
+      "note": "float-only differences <= 8.9e-16 in greedy_over_random; Python 3.12+ changed built-in sum() of floats to compensated summation. Reported value 1.64 (2 decimals) unaffected; all counts and judgments identical."
+    }
+  ],
+  "reported_numbers_checker": {
+    "file": "tests/check_reported_numbers_v6.py",
+    "sha256": "1155a594ec09d42f58ec78f661a0b4ec6f2c00c6ba227a9a8ef8b53ba40bc8ad",
+    "items": 57,
+    "results": {
+      "review_v6": "FAIL 0",
+      "py311": "FAIL 0",
+      "py312": "FAIL 0",
+      "py314": "FAIL 0"
+    }
+  },
+  "manuscript_crosscheck": "2026-11-13: 표 4-18·4-19 11개 행과 4.5.9절·6.1절·부록 B의 v6 수치 9곳을 원고(카드 청구 데이터의 변조 식별 가능성 분석.docx, 2026-11-12 19:42 저장본) 텍스트와 대조, 누락·불일치 0"
+}
