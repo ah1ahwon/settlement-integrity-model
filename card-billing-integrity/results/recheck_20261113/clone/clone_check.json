@@ -1,0 +1,132 @@
+{
+ "date": "2026-11-13T12:35:06+09:00",
+ "scope": "fresh clone of the public repository checked out at the commit cited in Appendix B; all Appendix B commands (v2 set, v3-v6 supplements) re-executed on the same computer; not cross-machine validation",
+ "source": "https://github.com/ah1ahwon/settlement-integrity-model",
+ "commit": "33626eb370875a8ad935db143e43950e803f7597",
+ "python": "3.11.1",
+ "platform": "macOS-26.5.1-arm64-arm-64bit",
+ "hash_seed": 0,
+ "pythonpath": {
+  "v3": "src:tests:experiments:legacy",
+  "v2_v4_v5_v6": "src:tests:experiments:experiments/legacy"
+ },
+ "pre_run_check": "SHA-256 of all 114 public files listed in results/review_v3-v6 manifest.json matched; 127 entries under private/ (development archive, not published, not used by any command) were not checked",
+ "steps": [
+  {
+   "name": "v2_run_all",
+   "exit_code": 0,
+   "seconds": 68
+  },
+  {
+   "name": "v2_check_baseline",
+   "exit_code": 0,
+   "seconds": 0
+  },
+  {
+   "name": "v2_check_rerun",
+   "exit_code": 0,
+   "seconds": 0
+  },
+  {
+   "name": "boundary",
+   "exit_code": 0,
+   "seconds": 0
+  },
+  {
+   "name": "independent",
+   "exit_code": 0,
+   "seconds": 29
+  },
+  {
+   "name": "id_equivalence",
+   "exit_code": 0,
+   "seconds": 7
+  },
+  {
+   "name": "review_v3",
+   "exit_code": 0,
+   "seconds": 25
+  },
+  {
+   "name": "deletion_metrics",
+   "exit_code": 0,
+   "seconds": 2
+  },
+  {
+   "name": "deletion_budget",
+   "exit_code": 0,
+   "seconds": 201
+  },
+  {
+   "name": "s5_ambiguity",
+   "exit_code": 0,
+   "seconds": 89
+  },
+  {
+   "name": "joint_deletion",
+   "exit_code": 0,
+   "seconds": 10
+  },
+  {
+   "name": "joint_deletion_boundary",
+   "exit_code": 0,
+   "seconds": 10
+  },
+  {
+   "name": "adaptive_ambiguity",
+   "exit_code": 0,
+   "seconds": 29
+  },
+  {
+   "name": "test_adaptive",
+   "exit_code": 0,
+   "seconds": 1
+  },
+  {
+   "name": "amount_deletion",
+   "exit_code": 0,
+   "seconds": 50
+  },
+  {
+   "name": "v6_check",
+   "exit_code": 0,
+   "seconds": 0
+  }
+ ],
+ "comparisons": {
+  "v2": {
+   "tasks": 25,
+   "abnormal_exits": 0,
+   "differing_logs": 0,
+   "reported_numbers_60": "FAIL 0 (baseline_v2 and new rerun)",
+   "diff_file": "diff_v2_20261113_122625.txt"
+  },
+  "v3_logs": "boundary, independent, id_equivalence: 0 differing lines vs results/review_v3",
+  "v3_json": "review_v3_results.json vs results/review_v3/results.json: only performance timings (ms) and recorded Python version (preserved file from 3.12.14, cf. section 4.5.7) differ; all other 1,781 values identical",
+  "v4": "deletion_metrics, deletion_budget, joint_deletion, joint_deletion_boundary: 0 differing lines; s5_ambiguity: 2 lines (output path only); s5_ambiguity.json 2,165 values identical",
+  "v5": "adaptive_ambiguity log 0 differing lines; test_adaptive_ambiguity log identical to adaptive_checks.log; adaptive_ambiguity.json 6,243 values identical",
+  "v6": "amount_deletion log 0 differing lines; amount_deletion.json byte-identical to results/review_v6/amount_deletion.json (sha256 58c7a8dd57e5a6507136feac8a8e8c27221c435ed7b21ab1e1b0b9759804a626); check_reported_numbers_v6: 57 items, FAIL 0"
+ },
+ "files": [
+  "adaptive_ambiguity.log",
+  "amount_deletion.log",
+  "boundary.log",
+  "deletion_budget.log",
+  "deletion_metrics.log",
+  "diff_v2_20261113_122625.txt",
+  "id_equivalence.log",
+  "independent.log",
+  "joint_deletion.log",
+  "joint_deletion_boundary.log",
+  "reported_numbers_check_v2_rerun_v2_20261113_122625.txt",
+  "review_v3.log",
+  "run_summary.txt",
+  "s5_ambiguity.log",
+  "test_adaptive.log",
+  "v2_check_baseline.log",
+  "v2_check_rerun.log",
+  "v2_run_all.log",
+  "v6_check.log"
+ ],
+ "note": "Logs are copied unchanged except the absolute temporary-folder prefix of the diff report path on line 26 of v2_run_all.log, replaced by the repository-relative path."
+}
